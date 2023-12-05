@@ -24,6 +24,10 @@ dependencies {
     implementation ("com.github.nexus421:KotNexLib:1.13.0")
 }
 
+kotlin {
+    jvmToolchain(11)
+}
+
 compose.desktop {
     application {
         mainClass = "MainKt"

@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -42,7 +44,8 @@ class HashWindowElement : WindowElement() {
                 OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = {
                     expandDropDown = expandDropDown.not()
                 }) {
-                    Text(selectedHashAlgorithm.algorithm)
+                    Text(selectedHashAlgorithm.algorithm, modifier = Modifier.weight(1f))
+                    Icon(Icons.Default.ArrowDropDown, contentDescription = "DropDown")
                 }
                 DropdownMenu(expandDropDown, onDismissRequest = { expandDropDown = false }) {
                     HashAlgorithm.entries.forEach {

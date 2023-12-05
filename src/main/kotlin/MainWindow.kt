@@ -15,7 +15,7 @@ import elements.WindowElement
 
 @Composable
 fun MainWindow(elements: List<WindowElement>) {
-    var selectedElement by rememberIt<WindowElement?>(null)
+    var selectedElement by rememberIt<WindowElement?>(elements.first())
     Box {
         Row(modifier = Modifier.fillMaxSize()) {
             LazyColumn(modifier = Modifier.padding(8.dp)) {
