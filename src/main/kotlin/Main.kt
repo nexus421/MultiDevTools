@@ -27,7 +27,8 @@ fun main() = application {
                         ServerWindowElement(),
                         Base64WindowElement(),
                         TimeWindowElement(),
-                        StringCaseWindowElement()
+                        StringCaseWindowElement(),
+                        QrCodeWindowElement()
                     )
                 )
             }

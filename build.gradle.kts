@@ -22,6 +22,7 @@ dependencies {
     // With compose.desktop.common you will also lose @Preview functionality
     implementation(compose.desktop.currentOs)
     implementation("com.github.nexus421:KotNexLib:1.14.0")
+    implementation("io.github.g0dkar:qrcode-kotlin:4.0.7")
 }
 
 kotlin {
