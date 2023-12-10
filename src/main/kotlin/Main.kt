@@ -6,6 +6,10 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import elements.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+
+val coroutine = CoroutineScope(Dispatchers.Default)
 
 fun main() = application {
     Window(
