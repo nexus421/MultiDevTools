@@ -26,7 +26,8 @@ fun main() = application {
                         StringGeneratorWindowElement(),
                         ServerWindowElement(),
                         Base64WindowElement(),
-                        TimeWindowElement()
+                        TimeWindowElement(),
+                        StringCaseWindowElement()
                     )
                 )
             }
