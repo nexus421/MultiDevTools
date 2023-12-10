@@ -30,7 +30,8 @@ fun main() = application {
                         StringCaseWindowElement(),
                         QrCodeWindowElement(),
                         UUIDWindowElement(),
-                        RegexWindowElement()
+                        RegexWindowElement(),
+                        NumConverterWindowElement()
                     )
                 )
             }
