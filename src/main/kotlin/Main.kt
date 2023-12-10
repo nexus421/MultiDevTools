@@ -29,7 +29,8 @@ fun main() = application {
                         TimeWindowElement(),
                         StringCaseWindowElement(),
                         QrCodeWindowElement(),
-                        UUIDWindowElement()
+                        UUIDWindowElement(),
+                        RegexWindowElement()
                     )
                 )
             }

@@ -47,3 +47,15 @@ fun <T> SimpleDropDown(selected: T, items: List<T>, onSelectedChanged: (T) -> Un
         }
     }
 }
+
+@Composable
+fun OutTextField(
+    text: String,
+    label: String,
+    modifier: Modifier = Modifier.fillMaxWidth(),
+    onValueChanged: (String) -> Unit
+) {
+    OutlinedTextField(text, modifier = modifier, onValueChange = onValueChanged, label = {
+        Text(label)
+    })
+}

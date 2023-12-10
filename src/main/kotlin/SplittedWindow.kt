@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun SplittedWindow(
     leftSide: @Composable BoxScope.() -> Unit,
-    middle: @Composable ColumnScope.() -> Unit,
+    middle: (@Composable ColumnScope.() -> Unit)?,
     rightSide: @Composable BoxScope.() -> Unit
 ) {
     Row(modifier = Modifier.fillMaxSize()) {
@@ -17,10 +17,12 @@ fun SplittedWindow(
             modifier = Modifier.weight(1f).border(2.dp, Color.Gray, RoundedCornerShape(8.dp)).padding(8.dp)
                 .fillMaxSize(), content = leftSide
         )
-        Column(
-            modifier = Modifier.weight(0.5f).border(2.dp, Color.Gray, RoundedCornerShape(8.dp)).padding(8.dp)
-                .fillMaxSize(), content = middle
-        )
+        middle?.let {
+            Column(
+                modifier = Modifier.weight(0.5f).border(2.dp, Color.Gray, RoundedCornerShape(8.dp)).padding(8.dp)
+                    .fillMaxSize(), content = it
+            )
+        }
         Box(
             modifier = Modifier.weight(1f).border(2.dp, Color.Gray, RoundedCornerShape(8.dp)).padding(8.dp)
                 .fillMaxSize(), content = rightSide
