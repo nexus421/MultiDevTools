@@ -28,7 +28,8 @@ fun main() = application {
                         Base64WindowElement(),
                         TimeWindowElement(),
                         StringCaseWindowElement(),
-                        QrCodeWindowElement()
+                        QrCodeWindowElement(),
+                        UUIDWindowElement()
                     )
                 )
             }

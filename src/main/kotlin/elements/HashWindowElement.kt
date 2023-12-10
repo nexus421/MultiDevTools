@@ -15,9 +15,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import copyToClipboard
 import hash
 import rememberIt
-import toClipboard
 
 class HashWindowElement : WindowElement() {
     override val name = "Hash"
@@ -75,7 +75,7 @@ class HashWindowElement : WindowElement() {
 
             Button(modifier = Modifier.fillMaxWidth(), onClick = {
                 hashedInput = rawInput.hash(selectedHashAlgorithm)
-                if (checkClipboard) hashedInput.toClipboard()
+                if (checkClipboard) hashedInput.copyToClipboard()
             }) {
                 Text("Hash")
             }

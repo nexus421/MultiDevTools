@@ -31,7 +31,7 @@ class QrCodeWindowElement : WindowElement() {
         var qrBitmap by rememberIt<Bitmap?>(null)
         var liveGeneration by rememberIt(false)
         var expandDropDown by rememberIt(false)
-        var selectedType by rememberIt(Types.Squares)
+        var selectedType by rememberIt(Types.Rounded)
         var hexColor by rememberIt("ffffff")
 
         SplittedWindow(leftSide = {
@@ -45,18 +45,18 @@ class QrCodeWindowElement : WindowElement() {
             }, label = { Text("QR-Code data") })
         }, middle = {
             ButtonText("Generate", modifier = Modifier.fillMaxWidth(), onClick = {
-                generateQrCode(qrInput, selectedType) { qrBitmap = it }
+                generateQrCode(qrInput, selectedType, hexColor) { qrBitmap = it }
             })
             CheckBoxText("Live generation", liveGeneration) { liveGeneration = it }
 
-            OutlinedTextField(qrInput, modifier = Modifier.fillMaxWidth(), onValueChange = {
-                qrInput = it
-                if (liveGeneration) {
-                    generateQrCode(qrInput, selectedType, hexColor) {
-                        qrBitmap = it
-                    }
-                }
-            }, label = { Text("QR-Code hex-color") })
+//            OutlinedTextField(hexColor, modifier = Modifier.fillMaxWidth(), onValueChange = {
+//                hexColor = it
+//                if (liveGeneration) {
+//                    generateQrCode(qrInput, selectedType, hexColor) {
+//                        qrBitmap = it
+//                    }
+//                }
+//            }, label = { Text("QR-Code hex-color") })
 
             Box {
                 OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = {
@@ -79,9 +79,6 @@ class QrCodeWindowElement : WindowElement() {
                     }
                 }
             }
-            ButtonText("Speichern") {
-                //ToDo: Store image to selected location
-            }
 
             Spacer(Modifier.weight(1f))
             Text("Based on https://github.com/g0dkar/qrcode-kotlin", fontSize = 10.sp)
@@ -99,10 +96,11 @@ class QrCodeWindowElement : WindowElement() {
                 Types.Squares -> it.ofSquares()
                 Types.RoundedSquares -> it.ofRoundedSquares()
             }
-        }.let {
-            if (hexColor.startsWith("#")) hexColor else "#$hexColor"
-            it.withColor()
-        }.build(input).renderToBytes()
+        }.withColor(org.jetbrains.skia.Color.WHITE)
+            .withBackgroundColor(org.jetbrains.skia.Color.BLACK)
+            .withGradientColor(org.jetbrains.skia.Color.MAGENTA, org.jetbrains.skia.Color.CYAN)
+            .build(input)
+            .renderToBytes()
         onResult(Bitmap.makeFromImage(Image.makeFromEncoded(qrRenderedPNG)))
     }
 
