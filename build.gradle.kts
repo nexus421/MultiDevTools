@@ -21,7 +21,7 @@ dependencies {
     // (in a separate module for demo project and in testMain).
     // With compose.desktop.common you will also lose @Preview functionality
     implementation(compose.desktop.currentOs)
-    implementation ("com.github.nexus421:KotNexLib:1.13.0")
+    implementation("com.github.nexus421:KotNexLib:1.14.0")
 }
 
 kotlin {

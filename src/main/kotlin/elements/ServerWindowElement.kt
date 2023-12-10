@@ -209,7 +209,6 @@ class ServerWindowElement : WindowElement() {
         customHeader: List<Pair<String, String>>
     ) = HttpServer.create(InetSocketAddress(serverPort ?: 8080), 0).apply {
         createContext("/") { httpExchange ->
-            //ToDo: Empfangene Daten schöner ausgeben.
             setRequestUrl("Method ${httpExchange.requestMethod} at Path ${httpExchange.requestURI}")
             setRequestHeader(httpExchange.requestHeaders.map { "${it.key} => ${it.value.joinToString()}" }
                 .joinToString(separator = "\n"))
