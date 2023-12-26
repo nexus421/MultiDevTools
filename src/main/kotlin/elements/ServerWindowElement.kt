@@ -15,13 +15,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.sun.net.httpserver.HttpServer
 import coroutine
+import ifNull
 import kotlinx.coroutines.launch
 import rememberIt
+import tryOrNull
 import java.net.InetSocketAddress
 
 
@@ -87,9 +90,9 @@ class ServerWindowElement : WindowElement() {
             //Settings
             Button(modifier = Modifier.fillMaxWidth(), onClick = {
                 coroutine.launch {
-                    if (serverRunning.not()) server.start()
+                    if (serverRunning.not()) server?.start()
                     else {
-                        server.stop(1)
+                        server?.stop(1)
                         server = createHttpServer(serverPort = serverPort, setRequestUrl = {
                             requestURL = it
                         }, setRequestBody = {
@@ -100,7 +103,7 @@ class ServerWindowElement : WindowElement() {
                             contentType = contentType,
                             httpResponseCode = httpResponseCode,
                             textToResponse = textToResponse,
-                            customHeader = listOf(customHeader1, customHeader2).filterNotNull()
+                            customHeader = listOfNotNull(customHeader1, customHeader2)
                         )
                     }
                     serverRunning = serverRunning.not()
@@ -115,7 +118,7 @@ class ServerWindowElement : WindowElement() {
                 Text("Server-Port")
             })
 
-            Row {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(
                     if (contentTypeIsJson) "application/json" else contentType,
                     modifier = Modifier.weight(1f),
@@ -175,6 +178,10 @@ class ServerWindowElement : WindowElement() {
                 }
             }
 
+            server.ifNull {
+                Text("Error creating server!")
+            }
+
         }, rightSide = {
             Column {
                 //Outgoing JSON (optional)
@@ -207,25 +214,27 @@ class ServerWindowElement : WindowElement() {
         httpResponseCode: Int?,
         textToResponse: String,
         customHeader: List<Pair<String, String>>
-    ) = HttpServer.create(InetSocketAddress(serverPort ?: 8080), 0).apply {
-        createContext("/") { httpExchange ->
-            setRequestUrl("Method ${httpExchange.requestMethod} at Path ${httpExchange.requestURI}")
-            setRequestHeader(httpExchange.requestHeaders.map { "${it.key} => ${it.value.joinToString()}" }
-                .joinToString(separator = "\n"))
-            setRequestBody(String(httpExchange.requestBody.buffered().readAllBytes()))
-            httpExchange.responseHeaders.add(
-                "content-type",
-                if (contentTypeIsJson) "application/json" else contentType
-            )
-            customHeader.forEach {
-                httpExchange.responseHeaders.add(it.first, it.second)
-            }
-            httpExchange.sendResponseHeaders(
-                httpResponseCode ?: 200,
-                textToResponse.length.toLong()
-            ) // Statuscode und Länge der Antwort setzen
-            httpExchange.responseBody.use {  // Output-Stream der Antwort erhalten
-                it.write(textToResponse.toByteArray())
+    ) = tryOrNull {
+        HttpServer.create(InetSocketAddress(serverPort ?: 8080), 0).apply {
+            createContext("/") { httpExchange ->
+                setRequestUrl("Method ${httpExchange.requestMethod} at Path ${httpExchange.requestURI}")
+                setRequestHeader(httpExchange.requestHeaders.map { "${it.key} => ${it.value.joinToString()}" }
+                    .joinToString(separator = "\n"))
+                setRequestBody(String(httpExchange.requestBody.buffered().readAllBytes()))
+                httpExchange.responseHeaders.add(
+                    "content-type",
+                    if (contentTypeIsJson) "application/json" else contentType
+                )
+                customHeader.forEach {
+                    httpExchange.responseHeaders.add(it.first, it.second)
+                }
+                httpExchange.sendResponseHeaders(
+                    httpResponseCode ?: 200,
+                    textToResponse.length.toLong()
+                ) // Statuscode und Länge der Antwort setzen
+                httpExchange.responseBody.use {  // Output-Stream der Antwort erhalten
+                    it.write(textToResponse.toByteArray())
+                }
             }
         }
     }
