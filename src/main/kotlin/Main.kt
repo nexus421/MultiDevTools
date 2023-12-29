@@ -11,30 +11,54 @@ import kotlinx.coroutines.Dispatchers
 
 val coroutine = CoroutineScope(Dispatchers.Default)
 
-fun main() = application {
-    Window(
-        onCloseRequest = ::exitApplication,
-        title = "Multi-Dev-Tools",
-        state = rememberWindowState(width = 1280.dp, height = 800.dp)
-    ) {
-        MaterialTheme(colors = darkColors()) {
-            Scaffold {
-                MainWindow(
-                    listOf(
-                        Welcome(),
-                        HashWindowElement(),
-                        StringGeneratorWindowElement(),
-                        ServerWindowElement(),
-                        Base64WindowElement(),
-                        TimeWindowElement(),
-                        StringCaseWindowElement(),
-                        QrCodeWindowElement(),
-                        UUIDWindowElement(),
-                        RegexWindowElement(),
-                        NumConverterWindowElement()
+fun main() {
+
+    if (false) return doTest()
+
+    application {
+        Window(
+            onCloseRequest = ::exitApplication,
+            title = "Multi-Dev-Tools",
+            state = rememberWindowState(width = 1280.dp, height = 800.dp)
+        ) {
+            MaterialTheme(colors = darkColors()) {
+                Scaffold {
+                    MainWindow(
+                        listOf(
+                            Welcome(),
+                            HashWindowElement(),
+                            BruteForceWindowElement(),
+                            StringGeneratorWindowElement(),
+                            ServerWindowElement(),
+                            Base64WindowElement(),
+                            TimeWindowElement(),
+                            StringCaseWindowElement(),
+                            QrCodeWindowElement(),
+                            UUIDWindowElement(),
+                            RegexWindowElement(),
+                            NumConverterWindowElement()
+                        )
                     )
-                )
+                }
             }
         }
     }
+}
+
+fun doTest() {
+    val search = "asdf".hash()
+    charArrayOf('a', 'd', 'f', 's').createPermutations(9, onEachGeneration = {
+        if (it.hash() == search) {
+            println("Gefunden!")
+            true
+        } else false
+    }).let {
+        println(it.result.joinToString("\n"))
+        println("Time: ${it.timeMillis}ms for ${it.result.size} elements.")
+    }
+
+//    val result = charArrayOf('a', 'p', 'w', 'q', 'b').createPermutationsMulti()
+
+//    println(result)
+
 }
