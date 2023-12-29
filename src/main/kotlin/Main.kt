@@ -36,7 +36,8 @@ fun main() {
                             QrCodeWindowElement(),
                             UUIDWindowElement(),
                             RegexWindowElement(),
-                            NumConverterWindowElement()
+                            NumConverterWindowElement(),
+                            PermutationsWindowElement()
                         )
                     )
                 }
