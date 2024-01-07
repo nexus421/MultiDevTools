@@ -15,31 +15,36 @@ fun main() {
 
     if (false) return doTest()
 
+    //Should not be changed after MultiDevTools started
+    //The first Element here will be displayed first
+    val windowElements = listOf(
+        Welcome(),
+        HashWindowElement(),
+        BruteForceWindowElement(),
+        StringGeneratorWindowElement(),
+        ServerWindowElement(),
+        Base64WindowElement(),
+        TimeWindowElement(),
+        StringCaseWindowElement(),
+        QrCodeWindowElement(),
+        UUIDWindowElement(),
+        RegexWindowElement(),
+        NumConverterWindowElement(),
+        PermutationsWindowElement()
+    )
+
     application {
         Window(
-            onCloseRequest = ::exitApplication,
+            onCloseRequest = {
+                selectedElement?.onEnd()
+                exitApplication()
+            },
             title = "Multi-Dev-Tools",
             state = rememberWindowState(width = 1280.dp, height = 800.dp)
         ) {
             MaterialTheme(colors = darkColors()) {
                 Scaffold {
-                    MainWindow(
-                        listOf(
-                            Welcome(),
-                            HashWindowElement(),
-                            BruteForceWindowElement(),
-                            StringGeneratorWindowElement(),
-                            ServerWindowElement(),
-                            Base64WindowElement(),
-                            TimeWindowElement(),
-                            StringCaseWindowElement(),
-                            QrCodeWindowElement(),
-                            UUIDWindowElement(),
-                            RegexWindowElement(),
-                            NumConverterWindowElement(),
-                            PermutationsWindowElement()
-                        )
-                    )
+                    MainWindow(windowElements)
                 }
             }
         }

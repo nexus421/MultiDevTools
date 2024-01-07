@@ -5,22 +5,30 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Button
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import elements.WindowElement
 
+var selectedElement by mutableStateOf<WindowElement?>(null)
+    private set
+
 @Composable
 fun MainWindow(elements: List<WindowElement>) {
-    var selectedElement by rememberIt<WindowElement?>(elements.first())
+
+    LaunchedEffect(Unit) {
+        selectedElement = elements.first()
+    }
+
     Box {
         Row(modifier = Modifier.fillMaxSize()) {
             LazyColumn(modifier = Modifier.padding(8.dp)) {
                 items(elements) {
                     Button(modifier = Modifier.width(200.dp), onClick = {
+                        selectedElement?.onEnd()
+                        selectedElement = null //ToDo: Show a loading animation while selectedElement is null!
+                        it.onStart()
                         selectedElement = it
                     }) {
                         Text(it.name, color = Color.White)
