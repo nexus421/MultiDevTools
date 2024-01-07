@@ -39,8 +39,6 @@ class BruteForceWindowElement : WindowElement() {
 
         var isLoading by rememberIt(false)
 
-        var errorText by rememberIt("")
-
         SplittedWindow(leftSide = {
             TextField(rawInput, placeholder = {
                 Text("Hash-String to Brute Force")
@@ -100,17 +98,23 @@ class BruteForceWindowElement : WindowElement() {
             Button(modifier = Modifier.fillMaxWidth(), onClick = {
                 coroutine.launch {
                     if (maxLength == null) {
-                        errorText = "Max length should be set!"
+                        displayDialog("Max length should be set!")
                         delay(1000)
-                    }
-                    if (charsToUse.isEmpty()) {
-                        errorText = "You need some characters to try brute force!"
                         return@launch
                     }
+                    if (charsToUse.isEmpty()) {
+                        displayDialog("You need some characters to try brute force!")
+                        return@launch
+                    }
+                    if (rawInput.isBlank()) {
+                        displayDialog("Hash-input is empty. Please insert a valid hash.")
+                        return@launch
+                    }
+
                     bruteForcedValue = ""
                     isLoading = true
 
-                    errorText = "Brute Force is running. Please wait until it is finished!"
+                    displayDialog("Brute Force is running. Please wait until it is finished!")
 
                     if (minLength == null) {
                         charsToUse.toCharArray()
@@ -120,8 +124,7 @@ class BruteForceWindowElement : WindowElement() {
                                     true
                                 } else false
                             }.let {
-                            errorText =
-                                "Finished within ${it.timeMillis}ms. ${if (bruteForcedValue.isEmpty()) "No matching result found." else ""}"
+                                displayDialog("Finished within ${it.timeMillis}ms. ${if (bruteForcedValue.isEmpty()) "No matching result found." else ""}")
                         }
                     } else {
                         charsToUse.toCharArray()
@@ -132,8 +135,7 @@ class BruteForceWindowElement : WindowElement() {
                                 } else false
                             }.let { map ->
                                 val longestTime = map.values.maxOf { it.timeMillis }
-                                errorText =
-                                    "Finished within ${longestTime}ms. ${if (bruteForcedValue.isEmpty()) "No matching result found." else ""}"
+                                displayDialog("Finished within ${longestTime}ms. ${if (bruteForcedValue.isEmpty()) "No matching result found." else ""}")
                             }
                     }
                     isLoading = false
@@ -146,12 +148,15 @@ class BruteForceWindowElement : WindowElement() {
                 "This may take minutes, hours or years. Depending on the Hash an the possibilities/settings.",
                 fontSize = 9.sp
             )
-
-            if (errorText.isNotBlank()) Text(errorText)
         }, rightSide = {
             SelectionContainer {
                 Text(bruteForcedValue, modifier = Modifier.fillMaxSize())
             }
         })
+    }
+
+    override fun onEnd() {
+        super.onEnd()
+        //ToDo: Cancel brute force!!
     }
 }

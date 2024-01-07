@@ -3,6 +3,7 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 plugins {
     kotlin("jvm")
     id("org.jetbrains.compose")
+    idea
 }
 
 group = "bayern.kickner"
@@ -27,6 +28,13 @@ dependencies {
 
 kotlin {
     jvmToolchain(11)
+}
+
+idea {
+    module {
+        isDownloadSources = true
+        isDownloadJavadoc = true
+    }
 }
 
 compose.desktop {

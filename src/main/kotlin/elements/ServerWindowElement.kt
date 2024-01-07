@@ -13,7 +13,7 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,36 +36,34 @@ import java.net.InetSocketAddress
 class ServerWindowElement : WindowElement() {
     override val name = "Client-Test"
 
+    private var requestHeader by mutableStateOf("")
+    private var requestBody by mutableStateOf("")
+    private var requestURL by mutableStateOf("")
+    private var serverRunning by mutableStateOf(false)
+    private var serverPort by mutableStateOf<Int?>(8080)
+    private var textToResponse by mutableStateOf("OK")
+    private var httpResponseCode by mutableStateOf<Int?>(200)
+
+    private var contentType by mutableStateOf("*/*")
+    private var contentTypeIsJson by mutableStateOf(false)
+    private var customHeader1 by mutableStateOf<Pair<String, String>?>(null)
+    private var customHeader2 by mutableStateOf<Pair<String, String>?>(null)
+
+    private var server = createHttpServer()
+
+    override fun onEnd() {
+        super.onEnd()
+        coroutine.launch {
+            if (serverRunning) {
+                server?.stop(1)
+                server = createHttpServer()
+                serverRunning = serverRunning.not()
+            }
+        }
+    }
+
     @Composable
     override fun windowComposable() {
-
-        var requestHeader by rememberIt("")
-        var requestBody by rememberIt("")
-        var requestURL by rememberIt("")
-        var serverRunning by rememberIt(false)
-        var serverPort by rememberIt<Int?>(8080)
-        var textToResponse by rememberIt("OK")
-        var httpResponseCode by rememberIt<Int?>(200)
-
-        var contentType by rememberIt("*/*")
-        var contentTypeIsJson by rememberIt(false)
-        var customHeader1 by rememberIt<Pair<String, String>?>(null)
-        var customHeader2 by rememberIt<Pair<String, String>?>(null)
-
-        var server = remember {
-            createHttpServer(serverPort = serverPort, setRequestUrl = {
-                requestURL = it
-            }, setRequestBody = {
-                requestBody = it
-            }, setRequestHeader = {
-                requestHeader = it
-            }, contentTypeIsJson = contentTypeIsJson,
-                contentType = contentType,
-                httpResponseCode = httpResponseCode,
-                textToResponse = textToResponse,
-                customHeader = listOf(customHeader1, customHeader2).filterNotNull()
-            )
-        }
 
         SplittedWindow(leftSide = {
             Column {
@@ -93,18 +91,7 @@ class ServerWindowElement : WindowElement() {
                     if (serverRunning.not()) server?.start()
                     else {
                         server?.stop(1)
-                        server = createHttpServer(serverPort = serverPort, setRequestUrl = {
-                            requestURL = it
-                        }, setRequestBody = {
-                            requestBody = it
-                        }, setRequestHeader = {
-                            requestHeader = it
-                        }, contentTypeIsJson = contentTypeIsJson,
-                            contentType = contentType,
-                            httpResponseCode = httpResponseCode,
-                            textToResponse = textToResponse,
-                            customHeader = listOfNotNull(customHeader1, customHeader2)
-                        )
+                        server = createHttpServer()
                     }
                     serverRunning = serverRunning.not()
                 }
@@ -113,7 +100,8 @@ class ServerWindowElement : WindowElement() {
             }
 
             OutlinedTextField((serverPort ?: "").toString(), modifier = Modifier.fillMaxWidth(), onValueChange = {
-                serverPort = it.toIntOrNull()
+                if (serverRunning.not())
+                    serverPort = it.toIntOrNull()
             }, label = {
                 Text("Server-Port")
             })
@@ -204,17 +192,19 @@ class ServerWindowElement : WindowElement() {
         })
     }
 
-    fun createHttpServer(
-        serverPort: Int?,
-        setRequestUrl: (String) -> Unit,
-        setRequestHeader: (String) -> Unit,
-        setRequestBody: (String) -> Unit,
-        contentTypeIsJson: Boolean,
-        contentType: String,
-        httpResponseCode: Int?,
-        textToResponse: String,
-        customHeader: List<Pair<String, String>>
-    ) = tryOrNull {
+    private fun createHttpServer(
+        setRequestUrl: (String) -> Unit = {
+            requestURL = it
+        },
+        setRequestHeader: (String) -> Unit = {
+            requestHeader = it
+        },
+        setRequestBody: (String) -> Unit = {
+            requestBody = it
+        }
+    ) = tryOrNull(onError = {
+        displayDialog("Error while creating Server. Stacktrace:\n${it.stackTraceToString()}")
+    }) {
         HttpServer.create(InetSocketAddress(serverPort ?: 8080), 0).apply {
             createContext("/") { httpExchange ->
                 setRequestUrl("Method ${httpExchange.requestMethod} at Path ${httpExchange.requestURI}")
@@ -225,7 +215,7 @@ class ServerWindowElement : WindowElement() {
                     "content-type",
                     if (contentTypeIsJson) "application/json" else contentType
                 )
-                customHeader.forEach {
+                listOfNotNull(customHeader1, customHeader2).forEach {
                     httpExchange.responseHeaders.add(it.first, it.second)
                 }
                 httpExchange.sendResponseHeaders(

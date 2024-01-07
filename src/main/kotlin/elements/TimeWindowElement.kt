@@ -23,7 +23,6 @@ class TimeWindowElement : WindowElement() {
         var timeInMillis by rememberIt<Long?>(null)
         var convertedDate by rememberIt("")
         var format by rememberIt("dd.MM.yyyy HH:mm:ss")
-        var onError by rememberIt<String?>(null)
 
         SplittedWindow(leftSide = {
             OutlinedTextField((timeInMillis ?: "").toString(), modifier = Modifier.fillMaxWidth(), onValueChange = {
@@ -37,7 +36,7 @@ class TimeWindowElement : WindowElement() {
             Button(onClick = {
                 if (timeInMillis == null && convertedDate.isBlank()) return@Button
                 tryOrNull({
-                    onError = it.message ?: it.stackTraceToString()
+                    displayDialog(it.message ?: it.stackTraceToString())
                 }) {
                     val sdf = SimpleDateFormat(format)
                     if (timeInMillis == null && convertedDate.isNotBlank()) {
@@ -45,7 +44,6 @@ class TimeWindowElement : WindowElement() {
                     } else {
                         convertedDate = sdf.format(timeInMillis!!.toDate())
                     }
-                    onError = null
                 }
             }) {
                 Text("<<Convert>>")

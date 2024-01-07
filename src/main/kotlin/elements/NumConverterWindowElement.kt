@@ -34,10 +34,11 @@ class NumConverterWindowElement : WindowElement() {
                     return@OutTextField
                 }
                 if (it.matches(binaryRegex)) {
+                    val convertedNum = it.toLongOrErr(2) ?: return@OutTextField
                     binary = it
-                    octal = it.toLong(2).toString(8)
-                    decimal = it.toLong(2).toString(10)
-                    hex = it.toLong(2).toString(16)
+                    octal = convertedNum.toString(8)
+                    decimal = convertedNum.toString(10)
+                    hex = convertedNum.toString(16)
                 }
             }
 
@@ -50,10 +51,11 @@ class NumConverterWindowElement : WindowElement() {
                     return@OutTextField
                 }
                 if (it.matches(octalregex)) {
-                    binary = it.toLong(8).toString(2)
+                    val convertedNum = it.toLongOrErr(8) ?: return@OutTextField
+                    binary = convertedNum.toString(2)
                     octal = it
-                    decimal = it.toLong(8).toString(10)
-                    hex = it.toLong(8).toString(16)
+                    decimal = convertedNum.toString(10)
+                    hex = convertedNum.toString(16)
                 }
             }
 
@@ -66,10 +68,11 @@ class NumConverterWindowElement : WindowElement() {
                     return@OutTextField
                 }
                 if (it.matches(decimalRegex)) {
-                    binary = it.toLong(10).toString(2)
-                    octal = it.toLong(10).toString(8)
+                    val convertedNum = it.toLongOrErr(10) ?: return@OutTextField
+                    binary = convertedNum.toString(2)
+                    octal = convertedNum.toString(8)
                     decimal = it
-                    hex = it.toLong(10).toString(16)
+                    hex = convertedNum.toString(16)
                 }
             }
 
@@ -82,15 +85,23 @@ class NumConverterWindowElement : WindowElement() {
                     return@OutTextField
                 }
                 if (it.matches(hexRegex)) {
-                    binary = it.toLong(16).toString(2)
-                    octal = it.toLong(16).toString(8)
-                    decimal = it.toLong(16).toString(10)
+                    val convertedNum = it.toLongOrErr(16) ?: return@OutTextField
+                    binary = convertedNum.toString(2)
+                    octal = convertedNum.toString(8)
+                    decimal = convertedNum.toString(10)
                     hex = it
                 }
             }
 
-            Text("Hint: Do not enter numbers larger than 64 bit (long). Otherwise it will crash.", fontSize = 11.sp)
+            Text("Hint: You can't enter numbers larger than 2^64 (long).", fontSize = 11.sp)
 
+        }
+    }
+
+    private fun String.toLongOrErr(radix: Int): Long? {
+        return toLongOrNull(radix).apply {
+            if (this == null)
+                displayDialog("Number is to large to convert. Only numbers in range of 2^64 (long) are possible.")
         }
     }
 }
