@@ -45,7 +45,7 @@ class StringCaseWindowElement : WindowElement() {
 
                 kebabCase = snakeCase.replace("_", "-")
 
-            }, label = { Text("Converted date") })
+            }, label = { Text("Text input") })
         }, middle = {
 
         }, rightSide = {
