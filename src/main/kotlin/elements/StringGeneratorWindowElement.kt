@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import getRandomString
+import kotnexlib.getRandomString
 import rememberIt
 
 class StringGeneratorWindowElement : WindowElement() {

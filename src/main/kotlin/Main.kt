@@ -12,6 +12,8 @@ import elements.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotnexlib.hash
+import kotnexlib.ifTrue
 
 val coroutine = CoroutineScope(Dispatchers.Default)
 

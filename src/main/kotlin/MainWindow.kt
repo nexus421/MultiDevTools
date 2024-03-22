@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
 import elements.WindowElement
 import kotlinx.coroutines.launch
+import kotnexlib.ifNotNullOrBlank
 
 var selectedElement by mutableStateOf<WindowElement?>(null)
     private set

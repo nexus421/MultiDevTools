@@ -1,4 +1,4 @@
-import kotnexlib.once
+import kotnexlib.*
 import kotlin.concurrent.thread
 import kotlin.math.pow
 import kotlin.properties.Delegates

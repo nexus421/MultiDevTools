@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "bayern.kickner"
-version = "0.1"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
@@ -22,12 +22,12 @@ dependencies {
     // (in a separate module for demo project and in testMain).
     // With compose.desktop.common you will also lose @Preview functionality
     implementation(compose.desktop.currentOs)
-    implementation("com.github.nexus421:KotNexLib:1.14.0")
-    implementation("io.github.g0dkar:qrcode-kotlin:4.0.7")
+    implementation("com.github.nexus421:KotNexLib:2.0.0")
+    implementation("io.github.g0dkar:qrcode-kotlin:4.1.1")
 }
 
 kotlin {
-    jvmToolchain(11)
+    jvmToolchain(17)
 }
 
 idea {
@@ -43,8 +43,12 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+
+            //https://github.com/JetBrains/compose-multiplatform/blob/master/tutorials/Native_distributions_and_local_execution/README.md
+            modules("java.instrument", "jdk.httpserver", "jdk.unsupported")
+            jvmArgs += listOf("-Xmx4G")
             packageName = "MultiDevTools"
-            packageVersion = "1.0.0"
+            packageVersion = version.toString()
         }
     }
 }

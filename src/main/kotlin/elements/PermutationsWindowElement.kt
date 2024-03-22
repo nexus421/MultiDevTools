@@ -21,9 +21,9 @@ import androidx.compose.ui.unit.sp
 import coroutine
 import createPermutations
 import createPermutationsMulti
-import ifTrue
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotnexlib.ifTrue
 import rememberIt
 import kotlin.math.pow
 

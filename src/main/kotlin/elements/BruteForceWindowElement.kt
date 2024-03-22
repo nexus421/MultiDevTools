@@ -1,6 +1,5 @@
 package elements
 
-import HashAlgorithm
 import SplittedWindow
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -17,10 +16,11 @@ import androidx.compose.ui.unit.sp
 import coroutine
 import createPermutations
 import createPermutationsMulti
-import hash
-import ifTrue
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotnexlib.HashAlgorithm
+import kotnexlib.hash
+import kotnexlib.ifTrue
 import rememberIt
 
 class BruteForceWindowElement : WindowElement() {

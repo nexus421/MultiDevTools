@@ -4,8 +4,8 @@ import OutTextField
 import SplittedWindow
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.*
+import kotnexlib.tryOrNull
 import rememberIt
-import tryOrNull
 
 class RegexWindowElement : WindowElement() {
     override val name = "Regex matcher"
