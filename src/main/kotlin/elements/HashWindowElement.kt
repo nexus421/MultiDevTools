@@ -77,7 +77,7 @@ class HashWindowElement : WindowElement() {
                 hashedInput = rawInput.hash(selectedHashAlgorithm)
                 if (checkClipboard) hashedInput.copyToClipboard()
             }) {
-                Text("Hash")
+                Text("Hash".plus(if (checkClipboard) " and copy" else ""))
             }
         }, rightSide = {
             SelectionContainer {

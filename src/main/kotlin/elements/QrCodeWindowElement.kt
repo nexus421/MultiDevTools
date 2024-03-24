@@ -18,8 +18,12 @@ import androidx.compose.ui.graphics.asComposeImageBitmap
 import androidx.compose.ui.unit.sp
 import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.Image
+import org.jetbrains.skiko.toBufferedImage
 import qrcode.QRCode
 import rememberIt
+import utils.TransferableImage
+import utils.copyToClipboard
+import java.awt.Toolkit
 
 class QrCodeWindowElement : WindowElement() {
     override val name = "QR-Code generator"
@@ -40,6 +44,8 @@ class QrCodeWindowElement : WindowElement() {
                 if (liveGeneration) {
                     generateQrCode(qrInput, selectedType, hexColor) {
                         qrBitmap = it
+                        val image = TransferableImage(it.toBufferedImage())
+                        Toolkit.getDefaultToolkit().systemClipboard.setContents(image, image)
                     }
                 }
             }, label = { Text("QR-Code data") })
@@ -80,11 +86,16 @@ class QrCodeWindowElement : WindowElement() {
                 }
             }
 
+            qrBitmap?.let {
+                Button({ it.copyToClipboard() }, Modifier.fillMaxWidth()) { Text("Copy to Clipboard") }
+            }
+
             Spacer(Modifier.weight(1f))
             Text("Based on https://github.com/g0dkar/qrcode-kotlin", fontSize = 10.sp)
         }, rightSide = {
             qrBitmap?.let {
                 Image(it.asComposeImageBitmap(), null)
+
             }
         })
     }

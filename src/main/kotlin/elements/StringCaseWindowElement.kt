@@ -46,9 +46,7 @@ class StringCaseWindowElement : WindowElement() {
                 kebabCase = snakeCase.replace("_", "-")
 
             }, label = { Text("Text input") })
-        }, middle = {
-
-        }, rightSide = {
+        }, middle = null, rightSide = {
             SelectionContainer {
                 Column {
                     OutlinedTextField(camelCase, modifier = Modifier.fillMaxWidth(), onValueChange = {
