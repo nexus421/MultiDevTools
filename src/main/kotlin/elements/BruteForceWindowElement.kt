@@ -2,7 +2,6 @@ package elements
 
 import SplittedWindow
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -125,7 +124,7 @@ class BruteForceWindowElement : WindowElement() {
                                 } else false
                             }.let {
                                 displayDialog("Finished within ${it.timeMillis}ms. ${if (bruteForcedValue.isEmpty()) "No matching result found." else ""}")
-                        }
+                            }
                     } else {
                         charsToUse.toCharArray()
                             .createPermutationsMulti(minLength!!, maxLength ?: charsToUse.length, true) {
@@ -149,9 +148,7 @@ class BruteForceWindowElement : WindowElement() {
                 fontSize = 9.sp
             )
         }, rightSide = {
-            SelectionContainer {
-                Text(bruteForcedValue, modifier = Modifier.fillMaxSize())
-            }
+            Text(bruteForcedValue)
         })
     }
 

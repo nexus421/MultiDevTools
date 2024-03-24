@@ -81,7 +81,7 @@ class HashWindowElement : WindowElement() {
             }
         }, rightSide = {
             SelectionContainer {
-                Text(hashedInput, modifier = Modifier.fillMaxSize())
+                Text(hashedInput)
             }
         })
     }
