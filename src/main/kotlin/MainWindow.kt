@@ -2,6 +2,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -64,7 +66,9 @@ fun MainWindow(elements: List<WindowElement>) {
                         }, title = {
                             Text("Information for $name")
                         }, text = {
-                            Text(this)
+                            Column(Modifier.verticalScroll(rememberScrollState())) {
+                                Text(this@ifNotNullOrBlank)
+                            }
                         }, modifier = Modifier.border(2.dp, Color.Gray, MaterialTheme.shapes.medium)
                         )
                     }
