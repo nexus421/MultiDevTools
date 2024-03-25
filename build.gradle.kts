@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "bayern.kickner"
-version = "1.1.0"
+version = "1.2.0"
 
 repositories {
     mavenCentral()
@@ -35,6 +35,23 @@ idea {
         isDownloadSources = true
         isDownloadJavadoc = true
     }
+}
+
+tasks.build {
+    createBuildConfig()
+}
+
+fun Task.createBuildConfig() {
+    val file = File("src/main/kotlin/BuildConfig.kt")
+    outputs.file(file)
+    file.writeText(
+        """
+        //AUTO-GENERATED THROUGH GRADLE. DO NOT CHANGE!
+        
+        val BUILD_TIMESTAMP = ${System.currentTimeMillis()}
+        val VERSION = "$version"
+    """.trimIndent()
+    )
 }
 
 compose.desktop {

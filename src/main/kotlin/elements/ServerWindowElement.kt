@@ -234,7 +234,7 @@ class ServerWindowElement : DefaultSplitWindowElement() {
     ) = tryOrNull(onError = {
         displayDialog("Error while creating Server. Stacktrace:\n${it.stackTraceToString()}")
         postErrorMessage("Error creating server.")
-        it.printStackTrace()
+        log("Error starting Server", it)
         serverRunning = false
     }) {
         HttpServer.create(InetSocketAddress(serverPort ?: 8080), 0).apply {
