@@ -1,9 +1,12 @@
 package elements
 
 import ButtonText
+import VERSION
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import elements.base.WindowElement
 import model.LoadingDialogSettings
 
@@ -23,6 +26,9 @@ class Welcome: WindowElement() {
                     dismissLoading()
                 })
             }
+
+            Spacer(Modifier.weight(1f))
+            Text("Version $VERSION")
         }
     }
 
