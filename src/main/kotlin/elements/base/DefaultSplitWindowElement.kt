@@ -75,7 +75,7 @@ abstract class DefaultSplitWindowElement : WindowElement() {
      * @param timeMillis time in milliseconds the message will be displayed
      * @param color Color of the box around the text. Defaults to [blue]
      */
-    fun postMessage(msg: String, timeMillis: Long = 3000, color: Color = blue) {
+    fun postMessage(msg: String, timeMillis: Long = 2000, color: Color = blue) {
         //If you post a new message while another message is shown, it will be killed and replaced by the new message through this.
         if (currentRunningMessage?.isActive == true) {
             messageToPost = null
@@ -95,19 +95,19 @@ abstract class DefaultSplitWindowElement : WindowElement() {
      * See [postMessage].
      * Color is fixed to [green]
      */
-    fun postSuccessMessage(msg: String, timeMillis: Long = 3000) = postMessage(msg, timeMillis, green)
+    fun postSuccessMessage(msg: String, timeMillis: Long = 2000) = postMessage(msg, timeMillis, green)
 
     /**
      * See [postMessage].
      * Color is fixed to [orange]
      */
-    fun postWarningMessage(msg: String, timeMillis: Long = 3000) = postMessage(msg, timeMillis, orange)
+    fun postWarningMessage(msg: String, timeMillis: Long = 2000) = postMessage(msg, timeMillis, orange)
 
     /**
      * See [postMessage].
      * Color is fixed to [red]
      */
-    fun postErrorMessage(msg: String, timeMillis: Long = 3000) = postMessage(msg, timeMillis, red)
+    fun postErrorMessage(msg: String, timeMillis: Long = 2000) = postMessage(msg, timeMillis, red)
 
     @Composable
     override fun windowComposable() {
