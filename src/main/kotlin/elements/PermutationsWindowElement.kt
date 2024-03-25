@@ -7,24 +7,21 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Button
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coroutine
 import createPermutations
 import createPermutationsMulti
 import elements.base.WindowElement
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotnexlib.ifTrue
 import rememberIt
 import kotlin.math.pow
 
@@ -39,9 +36,8 @@ class PermutationsWindowElement : WindowElement() {
 
         var charsToUse by rememberIt("abcd")
         var minLength by rememberIt<Int?>(null)
-        var maxLength by rememberIt<Int?>(3)
+        var maxLength by rememberIt<String>("3")
 
-        var isLoading by rememberIt(false)
         var limitForSOO by rememberIt(false)
 
         var infoText by rememberIt("")
@@ -58,8 +54,12 @@ class PermutationsWindowElement : WindowElement() {
                     fontSize = 9.sp
                 )
                 Spacer(Modifier.height(16.dp))
-                OutlinedTextField(maxLength.toString(), onValueChange = {
-                    maxLength = it.toIntOrNull()
+                OutlinedTextField(maxLength, onValueChange = {
+                    if (it.isBlank() || it.toIntOrNull() == null) {
+                        maxLength = ""
+                        return@OutlinedTextField
+                    }
+                    maxLength = it
                 }, label = {
                     Text("Maximal length")
                 })
@@ -78,15 +78,16 @@ class PermutationsWindowElement : WindowElement() {
                 Spacer(Modifier.height(16.dp))
 
                 Button(modifier = Modifier.fillMaxWidth(), onClick = {
-                    coroutine.launch {
-                        val generate = charsToUse.length.toDouble().pow(maxLength ?: charsToUse.length)
+                    coroutine.launch(Dispatchers.Default) {
+                        showLoading()
+                        val generate = charsToUse.length.toDouble().pow(maxLength.toIntOrNull() ?: charsToUse.length)
                         if (generate > 5_000_000) {
                             infoText =
                                 "You try to generate ${generate.toInt()} permutations. As this could lead to problems like StackOverflow, please lower the length and/or the characters."
                             return@launch
                         }
 
-                        if (maxLength == null) {
+                        if (maxLength.isBlank()) {
                             infoText = "Max length should be set!"
                             delay(1000)
                         }
@@ -95,13 +96,10 @@ class PermutationsWindowElement : WindowElement() {
                             return@launch
                         }
                         values.clear()
-                        isLoading = true
-
-                        infoText = "Brute Force is running. Please wait until it is finished!"
 
                         if (minLength == null) {
-                            charsToUse.toCharArray().createPermutations(maxLength ?: charsToUse.length) {
-                                if (values.size > 1_000) limitForSOO = true
+                            charsToUse.toCharArray().createPermutations(maxLength.toIntOrNull() ?: charsToUse.length) {
+                                if (values.size > 500_000) limitForSOO = true
                                 else values.add(it)
                                 false
                             }.let {
@@ -112,7 +110,7 @@ class PermutationsWindowElement : WindowElement() {
                             charsToUse.toCharArray()
                                 .createPermutationsMulti(
                                     minLength!!,
-                                    maxLength ?: charsToUse.length,
+                                    maxLength.toIntOrNull() ?: charsToUse.length,
                                     onEachGeneration = @Synchronized {
                                         if (values.size > 1_000) {
                                             limitForSOO = true
@@ -127,17 +125,13 @@ class PermutationsWindowElement : WindowElement() {
                                         "Finished within ${longestTime}ms. Generated ${map.values.sumOf { it.result.size }} items."
                                 }
                         }
-                        isLoading = false
+
+                        dismissLoading()
                     }
                 }) {
                     Text("Generate")
                     Spacer(Modifier.weight(1f))
-                    isLoading.ifTrue { CircularProgressIndicator(color = Color.Black) }
                 }
-                Text(
-                    "This may take minutes, hours or years. Depending on the possibilities/settings.",
-                    fontSize = 9.sp
-                )
 
                 Spacer(Modifier.height(16.dp))
                 if (infoText.isNotBlank()) Text(infoText)
@@ -147,12 +141,12 @@ class PermutationsWindowElement : WindowElement() {
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     if (limitForSOO) {
                         stickyHeader {
-                            Text("The output is limited to 1_000 generations to prevent an StackOverflow!")
+                            Text("The output is limited to 500_000 generations to prevent an StackOverflow!")
                         }
                     }
 
-                    items(values) {
-                        Text(it, modifier = Modifier.fillMaxWidth())
+                    item {
+                        Text(values.joinToString())
                     }
                 }
             }
