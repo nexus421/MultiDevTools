@@ -1,0 +1,3 @@
+Simple tool with usefull actions, like Hashing, Server-Dummy, GUID generator, etc.
+
+To be continued...
