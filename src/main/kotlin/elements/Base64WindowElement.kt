@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import elements.base.WindowElement
 import kotnexlib.tryOrNull
 import rememberIt
 import kotlin.io.encoding.Base64

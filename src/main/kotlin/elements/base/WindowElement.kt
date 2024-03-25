@@ -1,4 +1,4 @@
-package elements
+package elements.base
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -14,7 +14,7 @@ import model.LoadingDialogSettings
  *
  * Any function is exampled in the "Welcome" screen.
  */
-sealed class WindowElement {
+abstract class WindowElement {
     /**
      * The name which will be displayed on the right selection buttons
      */

@@ -27,24 +27,69 @@ fun SplittedWindow(
                 modifier = Modifier.padding(bottom = 4.dp).border(2.dp, Color.Gray, RoundedCornerShape(8.dp))
                     .padding(8.dp).fillMaxWidth(), content = it
             )
-
         }
-        Row(modifier = Modifier.fillMaxSize()) {
+        Row(Modifier.weight(1f)) {
             Box(
                 modifier = Modifier.weight(1f).border(2.dp, Color.Gray, RoundedCornerShape(8.dp)).padding(8.dp)
-                    .fillMaxSize(), content = leftSide
+                    .fillMaxHeight(),
+                content = leftSide
             )
             Spacer(Modifier.width(4.dp))
             middle?.let {
                 Column(
                     modifier = Modifier.weight(0.5f).border(2.dp, Color.Gray, RoundedCornerShape(8.dp)).padding(8.dp)
-                        .fillMaxSize(), content = it
+                        .fillMaxHeight(),
+                    content = it
                 )
                 Spacer(Modifier.width(4.dp))
             }
             Box(
                 modifier = Modifier.weight(1f).border(2.dp, Color.Gray, RoundedCornerShape(8.dp)).padding(8.dp)
-                    .fillMaxSize(), content = rightSide
+                    .fillMaxHeight(),
+                content = rightSide
+            )
+        }
+    }
+}
+
+/**
+ * Default implementation for WindowElements.
+ *
+ * @param topView optional view at the top
+ * @param leftSide required view on the left side inside a Box
+ * @param middle optional view for in the middle. Should be used for settings, etc.
+ * @param rightSide required view on the right side inside a Box
+ */
+@Composable
+fun ColumnScope.DynamicSplitWindow(
+    topView: (@Composable BoxScope.() -> Unit)? = null,
+    leftSide: @Composable BoxScope.() -> Unit,
+    middle: (@Composable ColumnScope.() -> Unit)?,
+    rightSide: @Composable BoxScope.() -> Unit
+) {
+    Column(Modifier.weight(1f)) {
+        topView?.let {
+            Box(
+                modifier = Modifier.padding(bottom = 4.dp).border(2.dp, Color.Gray, RoundedCornerShape(8.dp))
+                    .padding(8.dp).fillMaxWidth(), content = it
+            )
+        }
+        Row {
+            Box(
+                modifier = Modifier.weight(1f).border(2.dp, Color.Gray, RoundedCornerShape(8.dp)).padding(8.dp)
+                    .fillMaxHeight(), content = leftSide
+            )
+            Spacer(Modifier.width(4.dp))
+            middle?.let {
+                Column(
+                    modifier = Modifier.weight(0.5f).border(2.dp, Color.Gray, RoundedCornerShape(8.dp)).padding(8.dp)
+                        .fillMaxHeight(), content = it
+                )
+                Spacer(Modifier.width(4.dp))
+            }
+            Box(
+                modifier = Modifier.weight(1f).border(2.dp, Color.Gray, RoundedCornerShape(8.dp)).padding(8.dp)
+                    .fillMaxHeight(), content = rightSide
             )
         }
     }

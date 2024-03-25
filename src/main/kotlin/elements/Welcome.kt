@@ -4,6 +4,7 @@ import ButtonText
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import elements.base.WindowElement
 import model.LoadingDialogSettings
 
 class Welcome: WindowElement() {

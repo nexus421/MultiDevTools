@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.sp
+import elements.base.WindowElement
 import kotnexlib.copyToClipboard
 import rememberIt
 import java.util.*

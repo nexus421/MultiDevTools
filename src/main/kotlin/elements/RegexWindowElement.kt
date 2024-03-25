@@ -4,6 +4,7 @@ import OutTextField
 import SplittedWindow
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.*
+import elements.base.WindowElement
 import kotnexlib.tryOrNull
 import rememberIt
 

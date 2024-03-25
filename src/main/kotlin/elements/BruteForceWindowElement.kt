@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.sp
 import coroutine
 import createPermutations
 import createPermutationsMulti
+import elements.base.WindowElement
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotnexlib.HashAlgorithm

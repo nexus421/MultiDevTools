@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
-import elements.WindowElement
+import elements.base.WindowElement
 import kotlinx.coroutines.launch
 import kotnexlib.ifNotNullOrBlank
 
