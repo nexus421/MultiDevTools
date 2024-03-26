@@ -16,6 +16,7 @@ import kotnexlib.format
 import kotnexlib.hash
 import kotnexlib.ifTrue
 import kotnexlib.toDate
+import utils.blue
 
 val coroutine = CoroutineScope(Dispatchers.Default)
 
@@ -57,7 +58,7 @@ fun main() {
             title = "Multi-Dev-Tools",
             state = rememberWindowState(width = 1280.dp, height = 800.dp)
         ) {
-            MaterialTheme(colors = darkColors()) {
+            MaterialTheme(colors = darkColors(primary = blue)) {
                 Scaffold {
                     MainWindow(windowElements)
                     onClose.ifTrue { SimpleLoadingDialog("Finishing current window. Please wait...") }

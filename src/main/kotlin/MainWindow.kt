@@ -28,18 +28,20 @@ fun MainWindow(elements: List<WindowElement>) {
     Box {
         Row(modifier = Modifier.fillMaxSize()) {
             LazyColumn(modifier = Modifier.padding(8.dp)) {
-                items(elements) {
-                    Button(modifier = Modifier.width(200.dp), onClick = {
+                items(elements) { windowElement ->
+                    val buttonColors =
+                        if (selectedElement == windowElement) ButtonDefaults.buttonColors(backgroundColor = Color.DarkGray) else ButtonDefaults.buttonColors()
+                    Button(modifier = Modifier.width(200.dp), colors = buttonColors, onClick = {
                         coroutine.launch {
                             selectedElement?.let {
                                 selectedElement = null
                                 it.onEnd()
                             }
-                            it.onStart()
-                            selectedElement = it
+                            windowElement.onStart()
+                            selectedElement = windowElement
                         }
                     }) {
-                        Text(it.name, color = Color.White)
+                        Text(windowElement.name, color = Color.White)
                     }
                 }
             }

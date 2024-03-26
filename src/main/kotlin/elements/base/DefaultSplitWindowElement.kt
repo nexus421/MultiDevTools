@@ -4,7 +4,6 @@ import DynamicSplitWindow
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -18,10 +17,7 @@ import coroutine
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import utils.blue
-import utils.green
-import utils.orange
-import utils.red
+import utils.*
 
 /**
  * Use this one to create a window element with some extras.
@@ -121,8 +117,8 @@ abstract class DefaultSplitWindowElement : WindowElement() {
 
             messageToPost?.let {
                 Box(
-                    Modifier.padding(top = 2.dp).border(4.dp, messageColor, RoundedCornerShape(8.dp))
-                        .background(Color.DarkGray, RoundedCornerShape(8.dp)).padding(4.dp)
+                    Modifier.padding(top = 2.dp).border(4.dp, messageColor, shape)
+                        .background(Color.DarkGray, shape).padding(4.dp)
                 ) {
                     Text(it, Modifier.padding(4.dp).fillMaxWidth(), textAlign = TextAlign.Center)
                 }
