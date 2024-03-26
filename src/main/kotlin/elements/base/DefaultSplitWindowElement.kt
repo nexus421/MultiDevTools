@@ -91,19 +91,19 @@ abstract class DefaultSplitWindowElement : WindowElement() {
      * See [postMessage].
      * Color is fixed to [green]
      */
-    fun postSuccessMessage(msg: String, timeMillis: Long = 2000) = postMessage(msg, timeMillis, green)
+    fun postSuccessMessage(msg: String, timeMillis: Long = 3000) = postMessage(msg, timeMillis, green)
 
     /**
      * See [postMessage].
      * Color is fixed to [orange]
      */
-    fun postWarningMessage(msg: String, timeMillis: Long = 2000) = postMessage(msg, timeMillis, orange)
+    fun postWarningMessage(msg: String, timeMillis: Long = 3000) = postMessage(msg, timeMillis, orange)
 
     /**
      * See [postMessage].
      * Color is fixed to [red]
      */
-    fun postErrorMessage(msg: String, timeMillis: Long = 2000) = postMessage(msg, timeMillis, red)
+    fun postErrorMessage(msg: String, timeMillis: Long = 3000) = postMessage(msg, timeMillis, red)
 
     @Composable
     override fun windowComposable() {
