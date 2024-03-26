@@ -32,20 +32,28 @@ class PermutationsWindowElement : WindowElement() {
     @Composable
     override fun windowComposable() {
 
-        val values = remember { mutableStateListOf<String>() }
+        val values = remember { mutableListOf<String>() }
+        val visibleList = remember { mutableStateListOf<String>() }
 
         var charsToUse by rememberIt("abcd")
-        var minLength by rememberIt<Int?>(null)
-        var maxLength by rememberIt<String>("3")
+        var minLength by rememberIt("")
+        var maxLength by rememberIt("3")
 
         var limitForSOO by rememberIt(false)
 
         var infoText by rememberIt("")
+
+        val printLimit = 500_000
+
         SplittedWindow(leftSide = {
             Column {
                 Spacer(Modifier.height(16.dp))
-                OutlinedTextField(minLength.toString(), onValueChange = {
-                    minLength = it.toIntOrNull()
+                OutlinedTextField(minLength, onValueChange = {
+                    if (it.isBlank() || it.toIntOrNull() == null || it == "0") {
+                        minLength = ""
+                        return@OutlinedTextField
+                    }
+                    minLength = it
                 }, label = {
                     Text("Minimal length")
                 })
@@ -55,7 +63,7 @@ class PermutationsWindowElement : WindowElement() {
                 )
                 Spacer(Modifier.height(16.dp))
                 OutlinedTextField(maxLength, onValueChange = {
-                    if (it.isBlank() || it.toIntOrNull() == null) {
+                    if (it.isBlank() || it.toIntOrNull() == null || it == "0") {
                         maxLength = ""
                         return@OutlinedTextField
                     }
@@ -80,53 +88,61 @@ class PermutationsWindowElement : WindowElement() {
                 Button(modifier = Modifier.fillMaxWidth(), onClick = {
                     coroutine.launch(Dispatchers.Default) {
                         showLoading()
-                        val generate = charsToUse.length.toDouble().pow(maxLength.toIntOrNull() ?: charsToUse.length)
-                        if (generate > 5_000_000) {
-                            infoText =
-                                "You try to generate ${generate.toInt()} permutations. As this could lead to problems like StackOverflow, please lower the length and/or the characters."
-                            return@launch
-                        }
-
-                        if (maxLength.isBlank()) {
-                            infoText = "Max length should be set!"
-                            delay(1000)
-                        }
-                        if (charsToUse.isEmpty()) {
-                            infoText = "You need some characters to try brute force!"
-                            return@launch
-                        }
-                        values.clear()
-
-                        if (minLength == null) {
-                            charsToUse.toCharArray().createPermutations(maxLength.toIntOrNull() ?: charsToUse.length) {
-                                if (values.size > 500_000) limitForSOO = true
-                                else values.add(it)
-                                false
-                            }.let {
+                        try {
+                            val generate =
+                                charsToUse.length.toDouble().pow(maxLength.toIntOrNull() ?: charsToUse.length)
+                            if (generate > 5_000_000) {
                                 infoText =
-                                    "Finished within ${it.timeMillis}ms. -> Generated ${it.result.size} items."
+                                    "You try to generate ${generate.toInt()} permutations. As this could lead to problems like StackOverflow, please lower the length and/or the characters."
+                                return@launch
                             }
-                        } else {
-                            charsToUse.toCharArray()
-                                .createPermutationsMulti(
-                                    minLength!!,
-                                    maxLength.toIntOrNull() ?: charsToUse.length,
-                                    onEachGeneration = @Synchronized {
-                                        if (values.size > 1_000) {
-                                            limitForSOO = true
-                                            false
-                                        } else {
-                                            values.add(it)
-                                            false
-                                        }
-                                    }).let { map ->
-                                    val longestTime = map.values.maxOf { it.timeMillis }
-                                    infoText =
-                                        "Finished within ${longestTime}ms. Generated ${map.values.sumOf { it.result.size }} items."
-                                }
-                        }
 
-                        dismissLoading()
+                            if (maxLength.isBlank()) {
+                                infoText = "Max length should be set!"
+                                delay(1000)
+                            }
+                            if (charsToUse.isEmpty()) {
+                                infoText = "You need some characters to try brute force!"
+                                return@launch
+                            }
+                            values.clear()
+
+                            if (minLength.isBlank()) {
+                                charsToUse.toCharArray()
+                                    .createPermutations(maxLength.toIntOrNull() ?: charsToUse.length) {
+                                        if (values.size > printLimit) limitForSOO = true
+                                        else values.add(it)
+                                        false
+                                    }.let {
+                                        infoText =
+                                            "Finished within ${it.timeMillis}ms. -> Generated ${it.result.size} items."
+                                    }
+                                visibleList.clear()
+                                visibleList.addAll(values)
+                            } else {
+                                charsToUse.toCharArray()
+                                    .createPermutationsMulti(
+                                        minLength.toIntOrNull() ?: 1,
+                                        maxLength.toIntOrNull() ?: charsToUse.length,
+                                        onEachGeneration = @Synchronized {
+                                            if (values.size > printLimit) {
+                                                limitForSOO = true
+                                                false
+                                            } else {
+                                                values.add(it)
+                                                false
+                                            }
+                                        }).let { map ->
+                                        val longestTime = map.values.maxOf { it.timeMillis }
+                                        infoText =
+                                            "Finished within ${longestTime}ms. Generated ${map.values.sumOf { it.result.size }} items."
+                                        visibleList.clear()
+                                        visibleList.addAll(values.sortedBy { it.length })
+                                    }
+                            }
+                        } finally {
+                            dismissLoading()
+                        }
                     }
                 }) {
                     Text("Generate")
@@ -141,12 +157,12 @@ class PermutationsWindowElement : WindowElement() {
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     if (limitForSOO) {
                         stickyHeader {
-                            Text("The output is limited to 500_000 generations to prevent an StackOverflow!")
+                            Text("The output is limited to $printLimit generations to prevent an StackOverflow!")
                         }
                     }
 
                     item {
-                        Text(values.joinToString())
+                        Text(visibleList.joinToString())
                     }
                 }
             }

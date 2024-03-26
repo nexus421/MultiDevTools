@@ -12,17 +12,13 @@ import elements.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotnexlib.format
 import kotnexlib.hash
 import kotnexlib.ifTrue
-import kotnexlib.toDate
 import utils.blue
 
 val coroutine = CoroutineScope(Dispatchers.Default)
 
 fun main() {
-
-    log("Launch MultiDevTools with version $VERSION from ${BUILD_TIMESTAMP.toDate().format()}")
 
     if (false) return doTest()
 

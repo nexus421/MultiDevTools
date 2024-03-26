@@ -27,7 +27,7 @@ class UUIDWindowElement : WindowElement() {
                 uuid = UUID.randomUUID().toString()
                 uuid.copyToClipboard()
             }
-            Text("Will automatically copied to clipboard", fontSize = 11.sp)
+            Text("Will automatically be copied to clipboard", fontSize = 11.sp)
         }
     }
 }

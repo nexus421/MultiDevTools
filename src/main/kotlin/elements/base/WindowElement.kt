@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import elements.log
 import main
 import model.LoadingDialogSettings
 
@@ -74,7 +75,7 @@ abstract class WindowElement {
      * Will be called when the users select this window and before [windowComposable] will be rendered.
      */
     open fun onStart() {
-        println("Starting $name")
+        log("Starting $name")
     }
 
     /**
@@ -82,6 +83,6 @@ abstract class WindowElement {
      * normally.
      */
     open fun onEnd() {
-        println("Ending $name")
+        log("Ending $name")
     }
 }
