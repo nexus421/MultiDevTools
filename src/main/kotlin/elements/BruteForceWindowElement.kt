@@ -1,12 +1,14 @@
 package elements
 
-import SplittedWindow
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -15,38 +17,44 @@ import androidx.compose.ui.unit.sp
 import coroutine
 import createPermutations
 import createPermutationsMulti
-import elements.base.WindowElement
+import elements.base.DefaultSplitWindowElement
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotnexlib.HashAlgorithm
 import kotnexlib.hash
 import kotnexlib.ifTrue
-import rememberIt
 
-class BruteForceWindowElement : WindowElement() {
+class BruteForceWindowElement : DefaultSplitWindowElement() {
     override val name = "Brute Force"
 
-    @Composable
-    override fun windowComposable() {
-        var rawInput by rememberIt("")
-        var bruteForcedValue by rememberIt("")
-        var selectedHashAlgorithm by rememberIt(HashAlgorithm.MD5)
-        var expandDropDown by rememberIt(false)
+    private var currentRunningJob by mutableStateOf<Job?>(null)
 
-        var charsToUse by rememberIt((('A'..'Z') + ('a'..'z') + ('0'..'9')).joinToString(""))
-        var minLength by rememberIt<Int?>(null)
-        var maxLength by rememberIt<Int?>(10)
+    private var rawInput by mutableStateOf("")
+    private var bruteForcedValue by mutableStateOf("")
+    private var selectedHashAlgorithm by mutableStateOf(HashAlgorithm.MD5)
+    private var expandDropDown by mutableStateOf(false)
 
-        var isLoading by rememberIt(false)
+    private var charsToUse by mutableStateOf((('A'..'Z') + ('a'..'z') + ('0'..'9')).joinToString(""))
+    private var minLength by mutableStateOf("")
+    private var maxLength by mutableStateOf("10")
 
-        SplittedWindow(leftSide = {
-            TextField(rawInput, placeholder = {
-                Text("Hash-String to Brute Force")
-            }, modifier = Modifier.fillMaxSize(), onValueChange = {
-                rawInput = it
-            })
-        }, middle = {
+    private var isLoading by mutableStateOf(false)
 
+    override fun getLeftSide(): @Composable BoxScope.() -> Unit = {
+        TextField(rawInput, placeholder = {
+            Text("Hash-String to Brute Force")
+        }, modifier = Modifier.fillMaxSize(), onValueChange = {
+            rawInput = it
+        })
+    }
+
+    override fun getRightSide(): @Composable BoxScope.() -> Unit = {
+        Text(bruteForcedValue)
+    }
+
+    override fun getMiddle(): @Composable ColumnScope.() -> Unit = {
+        Column(Modifier.verticalScroll(rememberScrollState())) {
             Box {
                 OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = {
                     expandDropDown = expandDropDown.not()
@@ -66,8 +74,8 @@ class BruteForceWindowElement : WindowElement() {
                 }
             }
             Spacer(Modifier.height(16.dp))
-            OutlinedTextField(minLength.toString(), onValueChange = {
-                minLength = it.toIntOrNull()
+            OutlinedTextField(minLength, onValueChange = {
+                minLength = it.toIntOrNull()?.toString() ?: return@OutlinedTextField
             }, label = {
                 Text("Minimal length")
             })
@@ -76,8 +84,8 @@ class BruteForceWindowElement : WindowElement() {
                 fontSize = 9.sp
             )
             Spacer(Modifier.height(16.dp))
-            OutlinedTextField(maxLength.toString(), onValueChange = {
-                maxLength = it.toIntOrNull()
+            OutlinedTextField(maxLength, onValueChange = {
+                maxLength = it.toIntOrNull()?.toString() ?: return@OutlinedTextField
             }, label = {
                 Text("Maximal length")
             })
@@ -96,8 +104,12 @@ class BruteForceWindowElement : WindowElement() {
             Spacer(Modifier.height(16.dp))
 
             Button(modifier = Modifier.fillMaxWidth(), onClick = {
-                coroutine.launch {
-                    if (maxLength == null) {
+                currentRunningJob?.let {
+                    if (it.isActive) it.cancel()
+                    currentRunningJob = null
+                }
+                currentRunningJob = coroutine.launch {
+                    if (maxLength.isBlank() || maxLength.toIntOrNull() == null) {
                         displayDialog("Max length should be set!")
                         delay(1000)
                         return@launch
@@ -116,9 +128,12 @@ class BruteForceWindowElement : WindowElement() {
 
                     displayDialog("Brute Force is running. Please wait until it is finished!")
 
-                    if (minLength == null) {
+                    if (minLength.isBlank()) {
                         charsToUse.toCharArray()
-                            .createPermutations(maxLength ?: charsToUse.length, doNotFillResultList = true) {
+                            .createPermutations(
+                                maxLength.toIntOrNull() ?: charsToUse.length,
+                                doNotFillResultList = true
+                            ) {
                                 if (it.hash(selectedHashAlgorithm) == rawInput) {
                                     bruteForcedValue = it
                                     true
@@ -128,7 +143,11 @@ class BruteForceWindowElement : WindowElement() {
                             }
                     } else {
                         charsToUse.toCharArray()
-                            .createPermutationsMulti(minLength!!, maxLength ?: charsToUse.length, true) {
+                            .createPermutationsMulti(
+                                minLength.toIntOrNull() ?: 1,
+                                maxLength.toIntOrNull() ?: charsToUse.length,
+                                true
+                            ) {
                                 if (it.hash(selectedHashAlgorithm) == rawInput) {
                                     bruteForcedValue = it
                                     true
@@ -139,6 +158,7 @@ class BruteForceWindowElement : WindowElement() {
                             }
                     }
                     isLoading = false
+                    currentRunningJob = null
                 }
             }) {
                 Text("Brute Force")
@@ -148,13 +168,23 @@ class BruteForceWindowElement : WindowElement() {
                 "This may take minutes, hours or years. Depending on the Hash an the possibilities/settings.",
                 fontSize = 9.sp
             )
-        }, rightSide = {
-            Text(bruteForcedValue)
-        })
+
+            if (currentRunningJob != null) {
+                Button({
+                    currentRunningJob?.cancel()
+                    currentRunningJob = null
+                    isLoading = false
+                }, Modifier.fillMaxWidth()) {
+                    Text("Cancel (not working)")
+                }
+            }
+        }
     }
+
+    override fun getTopView() = null
 
     override fun onEnd() {
         super.onEnd()
-        //ToDo: Cancel brute force!!
+        currentRunningJob?.cancel()
     }
 }
