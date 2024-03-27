@@ -37,7 +37,8 @@ fun main() {
         UUIDWindowElement(),
         RegexWindowElement(),
         NumConverterWindowElement(),
-        PermutationsWindowElement()
+        PermutationsWindowElement(),
+        CompressWindowElement()
     )
 
     var onClose by mutableStateOf(false)

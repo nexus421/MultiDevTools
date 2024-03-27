@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "bayern.kickner"
-version = "1.3.0"
+version = "1.4.0"
 
 repositories {
     mavenCentral()
@@ -22,7 +22,7 @@ dependencies {
     // (in a separate module for demo project and in testMain).
     // With compose.desktop.common you will also lose @Preview functionality
     implementation(compose.desktop.currentOs)
-    implementation("com.github.nexus421:KotNexLib:2.0.0")
+    implementation("com.github.nexus421:KotNexLib:2.1.0")
     implementation("io.github.g0dkar:qrcode-kotlin:4.1.1")
 }
 
@@ -47,6 +47,7 @@ fun Task.createBuildConfig() {
     file.writeText(
         """
         //AUTO-GENERATED THROUGH GRADLE. DO NOT CHANGE!
+        //Will only be refreshed after a build after a gradle sync!
         
         val BUILD_TIMESTAMP = ${System.currentTimeMillis()}
         val VERSION = "$version"

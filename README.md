@@ -15,6 +15,7 @@
 - Brute force: Just for fun
 - Base64 converter
 - Converting text to different string cases
+- Compress/decompress a String
 - etc.
 
 > The program runs on Linux, Windows and Mac. For Linux, pre-compiled executables are available in the releases.
