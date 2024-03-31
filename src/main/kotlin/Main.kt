@@ -38,7 +38,8 @@ fun main() {
         RegexWindowElement(),
         NumConverterWindowElement(),
         PermutationsWindowElement(),
-        CompressWindowElement()
+        CompressWindowElement(),
+        EncryptionWindowElement()
     )
 
     var onClose by mutableStateOf(false)
