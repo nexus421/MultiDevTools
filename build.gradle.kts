@@ -22,7 +22,7 @@ dependencies {
     // (in a separate module for demo project and in testMain).
     // With compose.desktop.common you will also lose @Preview functionality
     implementation(compose.desktop.currentOs)
-    implementation("com.github.nexus421:KotNexLib:2.3.0")
+    implementation("com.github.nexus421:KotNexLib:2.4.0")
     implementation("io.github.g0dkar:qrcode-kotlin:4.1.1")
 }
 

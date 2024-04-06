@@ -17,7 +17,8 @@ import model.EncryptionAlgorithm
 import rememberIt
 import javax.crypto.spec.IvParameterSpec
 
-
+//ToDo: IV muss übernommen werden, wenn einer vorhanden ist! Nicht einfach immer nen neuen generieren!
+//ToDo: AES/ECB/PKCS5Padding noch anbieten.
 class EncryptionWindowElement : DefaultSplitWindowElement() {
 
     override val name = "Encryption"
@@ -28,6 +29,10 @@ class EncryptionWindowElement : DefaultSplitWindowElement() {
     var selectedAlgorithm by mutableStateOf(EncryptionAlgorithm.Blowfish)
     var expandDropDown by mutableStateOf(false)
     var compress by mutableStateOf(false)
+
+    private val onError: (Throwable) -> Unit = {
+        displayDialog(it.stackTraceToString())
+    }
 
     override fun getLeftSide(): @Composable BoxScope.() -> Unit = {
         OutlinedTextField(plainTextInput, {
@@ -72,7 +77,11 @@ class EncryptionWindowElement : DefaultSplitWindowElement() {
             Switch(compress, { compress = it })
         }
 
-        if (selectedAlgorithm == EncryptionAlgorithm.Blowfish) BlowfishSettings() else AesSettings()
+        when (selectedAlgorithm) {
+            EncryptionAlgorithm.Blowfish -> BlowfishSettings()
+            EncryptionAlgorithm.AES_CBC -> AesSettings()
+            EncryptionAlgorithm.AES_EBC -> AesEBCSettings()
+        }
 
     }
 
@@ -123,7 +132,8 @@ class EncryptionWindowElement : DefaultSplitWindowElement() {
 
             if (saltToUser.isEmpty()) return@Button postWarningMessage("Salt is empty! At least one byte is required.")
 
-            val encryption = plainTextInput.encryptWithAesAndPasswordHelper(passwordInput, saltToUser, compress)
+            val encryption =
+                plainTextInput.encryptWithAesAndPasswordHelper(passwordInput, saltToUser, compress, onError)
                 ?: return@Button postErrorMessage("Error encrypting text. Check your input!")
             iv = encryption.ivParameterSpec.iv.joinToString()
             encryptedInput = encryption.encryptedText
@@ -141,8 +151,32 @@ class EncryptionWindowElement : DefaultSplitWindowElement() {
         }) { Text("Decrypt") }
     }
 
+    @Composable
+    private fun AesEBCSettings() {
+        var passwordInput by rememberIt("")
+
+        OutlinedTextField(passwordInput, { passwordInput = it }, label = { Text("Password") })
+        Button({
+            if (plainTextInput.isBlank() || passwordInput.isBlank()) return@Button postWarningMessage("Empty inputs")
+            if (passwordInput.length != 16 && passwordInput.length != 32) return@Button postWarningMessage("Password length has to be 16 or 32!")
+
+            encryptedInput = plainTextInput.encryptWithAesAndPassword(passwordInput, compress, onError) ?: run {
+                postErrorMessage("Error encrypting text. Check your input.")
+                ""
+            }
+        }) { Text("Encrypt") }
+        Button({
+            if (encryptedInput.isBlank() || passwordInput.isBlank()) return@Button postWarningMessage("Empty inputs")
+            if (passwordInput.length != 16 && passwordInput.length != 32) return@Button postWarningMessage("Password length has to be 16 or 32!")
+            plainTextInput = encryptedInput.decryptWithAesAndPassword(passwordInput, compress, onError) ?: run {
+                postErrorMessage("Error decrypting text. Check your input.")
+                ""
+            }
+        }) { Text("Decrypt") }
+    }
+
     override fun getTopView(): @Composable BoxScope.() -> Unit = {
-        if (selectedAlgorithm == EncryptionAlgorithm.AES) {
+        if (selectedAlgorithm == EncryptionAlgorithm.AES_CBC) {
             Column {
                 Text("AES encryption with AES/CBC/PKCS5Padding", fontWeight = FontWeight.Bold)
                 Divider()
