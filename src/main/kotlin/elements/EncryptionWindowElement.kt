@@ -17,8 +17,6 @@ import model.EncryptionAlgorithm
 import rememberIt
 import javax.crypto.spec.IvParameterSpec
 
-//ToDo: IV muss übernommen werden, wenn einer vorhanden ist! Nicht einfach immer nen neuen generieren!
-//ToDo: AES/ECB/PKCS5Padding noch anbieten.
 class EncryptionWindowElement : DefaultSplitWindowElement() {
 
     override val name = "Encryption"
