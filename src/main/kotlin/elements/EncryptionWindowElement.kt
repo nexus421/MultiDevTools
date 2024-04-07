@@ -86,25 +86,41 @@ class EncryptionWindowElement : DefaultSplitWindowElement() {
     }
 
     @Composable
+    private fun EncryptionButton(onClick: () -> Unit) {
+        Button(onClick = onClick) {
+            Text("Encrypt", modifier = Modifier.weight(1f))
+            Text("\uD83D\uDD12")
+        }
+    }
+
+    @Composable
+    private fun DecryptionButton(onClick: () -> Unit) {
+        Button(onClick = onClick) {
+            Text("Decrypt", modifier = Modifier.weight(1f))
+            Text("\uD83D\uDD13")
+        }
+    }
+
+    @Composable
     private fun BlowfishSettings() {
         var passwordInput by rememberIt("")
 
         OutlinedTextField(passwordInput, { passwordInput = it }, label = { Text("Password") })
-        Button({
-            if (plainTextInput.isBlank() || passwordInput.isBlank()) return@Button postWarningMessage("Empty inputs")
+        EncryptionButton {
+            if (plainTextInput.isBlank() || passwordInput.isBlank()) return@EncryptionButton postWarningMessage("Empty inputs")
 
             encryptedInput = plainTextInput.encryptWithBlowfish(passwordInput, compress) ?: run {
                 postErrorMessage("Error encrypting text. Check your input.")
                 ""
             }
-        }) { Text("Encrypt") }
-        Button({
-            if (encryptedInput.isBlank() || passwordInput.isBlank()) return@Button postWarningMessage("Empty inputs")
+        }
+        DecryptionButton {
+            if (encryptedInput.isBlank() || passwordInput.isBlank()) return@DecryptionButton postWarningMessage("Empty inputs")
             plainTextInput = encryptedInput.decryptWithBlowfish(passwordInput, compress) ?: run {
                 postErrorMessage("Error decrypting text. Check your input.")
                 ""
             }
-        }) { Text("Decrypt") }
+        }
     }
 
     @Composable
@@ -123,23 +139,32 @@ class EncryptionWindowElement : DefaultSplitWindowElement() {
         }
         OutlinedTextField(iv, { iv = it }, label = { Text("iv (Bytearray)") })
 
-        Button({
-            if (plainTextInput.isBlank() || passwordInput.isBlank()) return@Button postWarningMessage("Empty inputs")
+        EncryptionButton {
+            if (plainTextInput.isBlank() || passwordInput.isBlank()) return@EncryptionButton postWarningMessage("Empty inputs")
 
             val saltToUser = if (checkSaltGeneration) {
                 generateSecureRandom(8).apply { salt = joinToString() }
             } else salt.toIntByteArray()
 
-            if (saltToUser.isEmpty()) return@Button postWarningMessage("Salt is empty! At least one byte is required.")
+            if (saltToUser.isEmpty()) return@EncryptionButton postWarningMessage("Salt is empty! At least one byte is required.")
 
-            val encryption =
-                plainTextInput.encryptWithAesAndPasswordHelper(passwordInput, saltToUser, compress, onError)
-                ?: return@Button postErrorMessage("Error encrypting text. Check your input!")
-            iv = encryption.ivParameterSpec.iv.joinToString()
-            encryptedInput = encryption.encryptedText
-        }) { Text("Encrypt") }
-        Button({
-            if (encryptedInput.isBlank() || passwordInput.isBlank() || iv.isBlank()) return@Button postWarningMessage("Empty inputs")
+            val ivToUse = iv.toIntByteArray()
+
+            val ivParamSpec = if (ivToUse.isEmpty()) getIVSecureRandom()
+                ?: return@EncryptionButton postErrorMessage("IV is null! At least one byte is required.")
+            else IvParameterSpec(ivToUse)
+            val key = generateSecureAesKeyFromPassword(passwordInput, saltToUser)
+            plainTextInput.encryptWithAES(key, ivParamSpec, compress, onError)
+
+            val encryption = plainTextInput.encryptWithAES(key, ivParamSpec, compress, onError)
+                ?: return@EncryptionButton postErrorMessage("Error encrypting text. Check your input!")
+            iv = ivParamSpec.iv.joinToString()
+            encryptedInput = encryption
+        }
+        DecryptionButton {
+            if (encryptedInput.isBlank() || passwordInput.isBlank() || iv.isBlank()) return@DecryptionButton postWarningMessage(
+                "Empty inputs"
+            )
             plainTextInput = encryptedInput.decryptWithAES(
                 generateSecureAesKeyFromPassword(passwordInput, salt.toIntByteArray()),
                 IvParameterSpec(iv.toIntByteArray()),
@@ -148,7 +173,7 @@ class EncryptionWindowElement : DefaultSplitWindowElement() {
                 postErrorMessage("Error decrypting text. Check your inputs! Maybe wrong iv, Salt or password.")
                 ""
             }
-        }) { Text("Decrypt") }
+        }
     }
 
     @Composable
@@ -156,33 +181,48 @@ class EncryptionWindowElement : DefaultSplitWindowElement() {
         var passwordInput by rememberIt("")
 
         OutlinedTextField(passwordInput, { passwordInput = it }, label = { Text("Password") })
-        Button({
-            if (plainTextInput.isBlank() || passwordInput.isBlank()) return@Button postWarningMessage("Empty inputs")
-            if (passwordInput.length != 16 && passwordInput.length != 32) return@Button postWarningMessage("Password length has to be 16 or 32!")
+        EncryptionButton {
+            if (plainTextInput.isBlank() || passwordInput.isBlank()) return@EncryptionButton postWarningMessage("Empty inputs")
+            if (passwordInput.length != 16 && passwordInput.length != 32) return@EncryptionButton postWarningMessage("Password length has to be 16 or 32!")
 
             encryptedInput = plainTextInput.encryptWithAesAndPassword(passwordInput, compress, onError) ?: run {
                 postErrorMessage("Error encrypting text. Check your input.")
                 ""
             }
-        }) { Text("Encrypt") }
-        Button({
-            if (encryptedInput.isBlank() || passwordInput.isBlank()) return@Button postWarningMessage("Empty inputs")
-            if (passwordInput.length != 16 && passwordInput.length != 32) return@Button postWarningMessage("Password length has to be 16 or 32!")
+        }
+        DecryptionButton {
+            if (encryptedInput.isBlank() || passwordInput.isBlank()) return@DecryptionButton postWarningMessage("Empty inputs")
+            if (passwordInput.length != 16 && passwordInput.length != 32) return@DecryptionButton postWarningMessage("Password length has to be 16 or 32!")
             plainTextInput = encryptedInput.decryptWithAesAndPassword(passwordInput, compress, onError) ?: run {
                 postErrorMessage("Error decrypting text. Check your input.")
                 ""
             }
-        }) { Text("Decrypt") }
+        }
     }
 
     override fun getTopView(): @Composable BoxScope.() -> Unit = {
-        if (selectedAlgorithm == EncryptionAlgorithm.AES_CBC) {
-            Column {
-                Text("AES encryption with AES/CBC/PKCS5Padding", fontWeight = FontWeight.Bold)
-                Divider()
-                Text("Hint salt: This is displayed as Bytearray. This should look like \"-1, 23, 100, -4\". 8 (Byte) should be finde.")
-                Text("Hint iv: This is displayed as Bytearray. This should look like \"-1, 23, 100, -4\". At encryption a random iv will be created, used and displayed. Use that iv for decryption.")
+        Column {
+            when (selectedAlgorithm) {
+                EncryptionAlgorithm.Blowfish -> {
+                    Text("Blowfish based encryption", fontWeight = FontWeight.Bold)
+                    Text("Simple password based encryption. Not the securest one but good enough for some medium important cases.")
+                }
+
+                EncryptionAlgorithm.AES_CBC -> {
+                    Text("AES encryption with AES/CBC/PKCS5Padding", fontWeight = FontWeight.Bold)
+                    Text("This is currently the most secure implemented encryption!")
+                    Divider()
+                    Text("Hint salt: This is displayed as Bytearray. This should look like \"-1, 23, 100, -4\". 8 (Byte) should be finde.")
+                    Text("Hint iv: This is displayed as Bytearray. This should look like \"-1, 23, 100, -4\". At encryption a random iv will be created, used and displayed. Use that iv for decryption.")
+                }
+
+                EncryptionAlgorithm.AES_EBC -> {
+                    Text("AES encryption with AES/EBC/PKCS5Padding", fontWeight = FontWeight.Bold)
+                    Text("Simple password based encryption. Not the securest one but good enough for some medium important cases.")
+                }
             }
+            Divider()
+            Text("Use compression to compress large texts before encryption. This will provide a smaller encrypted result. Will only work on very large texts due to overhead!")
         }
     }
 
