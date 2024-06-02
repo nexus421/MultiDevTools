@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotnexlib.hash
 import kotnexlib.ifTrue
+import model.OS
 import utils.blue
 
 val coroutine = CoroutineScope(Dispatchers.Default)
@@ -22,10 +23,20 @@ fun main() {
 
     if (false) return doTest()
 
+    val currentSystemType = System.getProperty("os.name").lowercase().let {
+        when (it) {
+            "linux" -> OS.Linux
+            "windows" -> OS.Windows
+            "mac" -> OS.MacOS
+            else -> null
+        }
+    }
+
     //Should not be changed after MultiDevTools started
     //The first Element here will be displayed first
     val windowElements = listOf(
         Welcome(),
+        SSHWindowElement(),
         HashWindowElement(),
         BruteForceWindowElement(),
         StringGeneratorWindowElement(),
@@ -40,7 +51,7 @@ fun main() {
         PermutationsWindowElement(),
         CompressWindowElement(),
         EncryptionWindowElement()
-    )
+    ).filter { it.availableOS == OS.All || it.availableOS == currentSystemType }
 
     var onClose by mutableStateOf(false)
 

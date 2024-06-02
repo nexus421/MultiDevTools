@@ -16,6 +16,8 @@ import model.LoadingDialogSettings
  * Any function is exampled in the "Welcome" screen.
  */
 abstract class WindowElement {
+
+    open val availableOS = model.OS.All
     /**
      * The name which will be displayed on the right selection buttons
      */
