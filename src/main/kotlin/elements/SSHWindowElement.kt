@@ -1,6 +1,8 @@
 package elements
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -8,10 +10,17 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coroutine
 import elements.base.DefaultSplitWindowElement
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotnexlib.copyToClipboard
@@ -52,16 +61,16 @@ class SSHWindowElement : DefaultSplitWindowElement() {
 
     private val sshElements = mutableStateListOf<SSHElement>()
 
+    private var connectionName by mutableStateOf("")
+    private var sshName by mutableStateOf("")
+    private var sshPassword by mutableStateOf("")
+    private var sshIp by mutableStateOf("")
+    private var sshPort by mutableStateOf("")
+    private var additionalInformation by mutableStateOf("")
+
     override fun getLeftSide(): @Composable BoxScope.() -> Unit = {
         if (password.isBlank().not()) {
             Column {
-                var connectionName by remember { mutableStateOf("") }
-                var sshName by remember { mutableStateOf("") }
-                var sshPassword by remember { mutableStateOf("") }
-                var sshIp by remember { mutableStateOf("") }
-                var sshPort by remember { mutableStateOf("") }
-                var additionalInformation by remember { mutableStateOf("") }
-
                 TextField(
                     value = connectionName,
                     onValueChange = { connectionName = it },
@@ -88,8 +97,8 @@ class SSHWindowElement : DefaultSplitWindowElement() {
                 )
 
                 TextField(
-                    value = sshPort,
-                    onValueChange = { sshPort = it },
+                    value = additionalInformation,
+                    onValueChange = { additionalInformation = it },
                     label = { Text("Additional information (optional)") }
                 )
                 Button({
@@ -104,6 +113,13 @@ class SSHWindowElement : DefaultSplitWindowElement() {
                         )
                     )
                     storeAllCurrentElements()
+
+                    connectionName = ""
+                    sshName = ""
+                    sshIp = ""
+                    sshPassword = ""
+                    sshPort = ""
+                    additionalInformation = ""
                 }) {
                     Text("Save SSH connection")
                 }
@@ -120,8 +136,19 @@ class SSHWindowElement : DefaultSplitWindowElement() {
             Column {
                 TextField(
                     value = localPassword,
-                    onValueChange = { localPassword = it },
-                    label = { Text("Password required") })
+                    onValueChange = { localPassword = it.trim() },
+                    label = { Text("Password required") },
+                    modifier = Modifier.onKeyEvent {
+                        if (it.key == Key.Enter) {
+                            if (localPassword.length < 4) {
+                                postErrorMessage("Password length must be at least 4 characters long.")
+                                return@onKeyEvent false
+                            }
+                            password = localPassword
+                            loadAllCurrentElements()
+                        }
+                        true
+                    })
                 Button({
                     if (localPassword.length < 4) return@Button postErrorMessage("Password length must be at least 4 characters long.")
                     password = localPassword
@@ -131,7 +158,7 @@ class SSHWindowElement : DefaultSplitWindowElement() {
                 }
             }
         } else {
-            Column {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
                 Row {
                     Text(text = "Name", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
                     Text(text = "Username", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
@@ -143,35 +170,71 @@ class SSHWindowElement : DefaultSplitWindowElement() {
 
                 sshElements.forEach { sshElement ->
                     Row {
-                        Text(text = sshElement.displayName, modifier = Modifier.weight(1f))
-                        Text(text = sshElement.sshName, modifier = Modifier.weight(1f))
-                        Text(text = sshElement.sshIP, modifier = Modifier.weight(2f))
-                        Text(text = (sshElement.sshPort ?: 22).toString(), modifier = Modifier.weight(0.5f))
+                        Text(
+                            text = sshElement.displayName,
+                            modifier = Modifier.weight(1f),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(text = sshElement.sshName, modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
+                        Text(text = sshElement.sshIP, modifier = Modifier.weight(2f), fontWeight = FontWeight.Bold)
+                        Text(
+                            text = (sshElement.sshPort ?: 22).toString(),
+                            modifier = Modifier.weight(0.5f),
+                            fontWeight = FontWeight.Bold
+                        )
                     }
+                    Spacer(Modifier.height(8.dp))
+                    Text(sshElement.buildSSHString())
+                    Spacer(Modifier.height(8.dp))
+                    if (sshElement.additionalInformation.isNotBlank()) {
+                        Text(
+                            sshElement.additionalInformation,
+                            fontStyle = FontStyle.Italic,
+                            fontWeight = FontWeight.Thin
+                        )
+                        Spacer(Modifier.height(8.dp))
+                    }
+
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(sshElement.buildSSHString(), modifier = Modifier.weight(1f))
 
                         Button({
-                            //ToDo: Edit current entry
+                            connectionName = sshElement.displayName
+                            sshName = sshElement.sshName
+                            sshIp = sshElement.sshIP
+                            sshPassword = sshElement.sshPassword
+                            sshPort = sshElement.sshPort?.toString() ?: ""
+                            additionalInformation = sshElement.additionalInformation
                         }) {
                             Icon(Icons.Default.Edit, null)
                         }
+                        Spacer(Modifier.width(16.dp))
+
+                        var delete by remember { mutableStateOf(false) }
                         Button({
-                            //ToDo: Delete current entry. Doppelt checken, damit man nicht aus versehen löscht.
+                            if (delete.not()) {
+                                postMessage("Click again to delete this entry.")
+                                coroutine.launch {
+                                    delay(2000)
+                                    delete = false
+                                }
+                                delete = true
+                            } else {
+                                sshElements.remove(sshElement)
+                                storeAllCurrentElements()
+                            }
                         }) {
-                            Icon(Icons.Default.Delete, null)
+                            Icon(Icons.Default.Delete, null, tint = if (delete) Color.Red else Color.Unspecified)
                         }
+
+                        Spacer(Modifier.weight(1f))
 
                         Button({
                             sshElement.sshPassword.copyToClipboard()
                             postMessage("Password copied to clipboard")
                             SSHUtils.openKonsole(sshElement.buildSSHString())
                         }) {
-                            Text("Connect")
+                            Text("Connect", fontWeight = FontWeight.Bold)
                         }
-                    }
-                    if (sshElement.additionalInformation.isNotBlank()) {
-                        Text(sshElement.additionalInformation, fontStyle = FontStyle.Italic)
                     }
                     Divider()
                     Spacer(modifier = Modifier.height(8.dp))
@@ -183,15 +246,20 @@ class SSHWindowElement : DefaultSplitWindowElement() {
     override fun getMiddle(): @Composable (ColumnScope.() -> Unit)? = null
 
     override fun getTopView(): @Composable (BoxScope.() -> Unit) = {
-        Text(
-            """
-            This is a simple SSH password storage.
+        Column {
+            Text("This is a simple SSH password storage.", fontWeight = FontWeight.Bold)
+            Text(
+                """
             Enter your SSH data. This will all be stored and encrypted with the given password.
             After click on "connect", a terminal will be opened with the ssh command executed and the password will
             be copied to the clipboard. You only need to paste the password to the terminal an click enter.
             Never forget access data for your ssh servers.
+            
+            Hint: This will use the "konsole"-programm installed with KDE.
+            Hint: The password will only be used after the first item was added.
         """.trimIndent()
-        )
+            )
+        }
     }
 
 
