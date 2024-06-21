@@ -50,7 +50,8 @@ fun main() {
         NumConverterWindowElement(),
         PermutationsWindowElement(),
         CompressWindowElement(),
-        EncryptionWindowElement()
+        EncryptionWindowElement(),
+//        UrlEncodingWindowElement()
     ).filter { it.availableOS == OS.All || it.availableOS == currentSystemType }
 
     var onClose by mutableStateOf(false)
