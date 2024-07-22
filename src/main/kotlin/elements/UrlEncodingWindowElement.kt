@@ -14,6 +14,9 @@ import elements.base.DefaultSplitWindowElement
 import java.net.URLDecoder
 import java.net.URLEncoder
 
+/**
+ * A class that represents a window element for URL Encoding
+ */
 class UrlEncodingWindowElement : DefaultSplitWindowElement() {
 
     override val name = "URL Encoding/Decoding"

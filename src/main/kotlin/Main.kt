@@ -52,6 +52,7 @@ fun main() {
         CompressWindowElement(),
         EncryptionWindowElement(),
 //        UrlEncodingWindowElement()
+        FileHelperWindowElement()
     ).filter { it.availableOS == OS.All || it.availableOS == currentSystemType }
 
     var onClose by mutableStateOf(false)
