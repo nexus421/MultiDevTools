@@ -25,7 +25,7 @@ dependencies {
     // With compose.desktop.common you will also lose @Preview functionality
     implementation(compose.desktop.currentOs)
     implementation("com.github.nexus421:KotNexLib:2.6.0")
-    implementation("io.github.g0dkar:qrcode-kotlin:4.1.1")
+    implementation("io.github.g0dkar:qrcode-kotlin:4.2.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 }
 
