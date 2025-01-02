@@ -69,7 +69,7 @@ fun MainWindow(elements: List<WindowElement>) {
                             Text("Information for $name")
                         }, text = {
                             Column(Modifier.verticalScroll(rememberScrollState())) {
-                                Text(this@ifNotNullOrBlank)
+                                Text(it)
                             }
                         }, modifier = Modifier.border(2.dp, Color.Gray, MaterialTheme.shapes.medium)
                         )
@@ -87,7 +87,7 @@ fun MainWindow(elements: List<WindowElement>) {
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                loadingDialogSettings.text.ifNotNullOrBlank { Text(this) }
+                                loadingDialogSettings.text.ifNotNullOrBlank { Text(it) }
                                 Spacer(Modifier.height(16.dp))
                                 if (loadingDialogSettings.useLine) LinearProgressIndicator(
                                     modifier = Modifier.fillMaxWidth(),
@@ -96,7 +96,7 @@ fun MainWindow(elements: List<WindowElement>) {
                                 else CircularProgressIndicator()
                             }
                         }, title = {
-                            loadingDialogSettings.title.ifNotNullOrBlank { Text(this) }
+                            loadingDialogSettings.title.ifNotNullOrBlank { Text(it) }
                         }, modifier = Modifier.border(2.dp, Color.Gray, MaterialTheme.shapes.medium))
                     }
                 }
