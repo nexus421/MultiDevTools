@@ -1,12 +1,13 @@
 package elements
 
+import ButtonText
+import SimpleDropDown
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -18,6 +19,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import elements.base.DefaultSplitWindowElement
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotnexlib.tryOrNull
+import model.Action
+import model.AnyFile
+import model.Directory
+import rememberIt
 import java.io.File
 
 class FileHelperWindowElement : DefaultSplitWindowElement() {
@@ -27,6 +35,9 @@ class FileHelperWindowElement : DefaultSplitWindowElement() {
     private var filepath by mutableStateOf("")
     private var selectedAction by mutableStateOf(Action.List)
 
+    //ToDo: Das hier muss als eine Liste gespeichert werden, damit wir auf eine LazyColumn setzen können. Wichtig bei vielen Dateien. flatMap nutzen?
+    private var rootFile: AnyFile? = null
+
     override fun getLeftSide(): @Composable BoxScope.() -> Unit = {
         Column {
             OutlinedTextField(
@@ -35,8 +46,6 @@ class FileHelperWindowElement : DefaultSplitWindowElement() {
                 placeholder = { Text("Enter file path") },
                 label = { Text("Filepath") }
             )
-
-            ListFileView()
         }
     }
 
@@ -46,8 +55,8 @@ class FileHelperWindowElement : DefaultSplitWindowElement() {
 
             when (selectedAction) {
                 Action.List -> ListFileView()
-                Action.Delete -> TODO()
-                Action.Merge -> TODO()
+                Action.Delete -> Text("Not yet implemented")
+                Action.Merge -> Text("Not yet implemented")
                 Action.ChangeContainer -> ContainerChangeView()
             }
         }
@@ -62,6 +71,7 @@ class FileHelperWindowElement : DefaultSplitWindowElement() {
     private fun ColumnScope.ListFileView() {
         val file = File(filepath)
         if (filepath.length < 5 || file.exists().not()) return
+
         Column(Modifier.verticalScroll(rememberScrollState())) {
             DisplayFolder(file)
         }
@@ -69,34 +79,34 @@ class FileHelperWindowElement : DefaultSplitWindowElement() {
 
     @Composable
     private fun ColumnScope.DisplayFolder(folder: File, padding: Dp = 0.dp) {
-        Text("D ${folder.name}", fontWeight = FontWeight.ExtraBold, modifier = Modifier.padding(start = padding))
+        Text(
+            "\uD83D\uDCC2 ${folder.name}",
+            fontWeight = FontWeight.ExtraBold,
+            modifier = Modifier.padding(start = padding)
+        )
         folder.listFiles()?.forEach {
             if (it.isDirectory) DisplayFolder(it, padding + 32.dp)
-            else Text("F ${it.name}", modifier = Modifier.padding(start = padding + 32.dp))
+            else Text("\uD83D\uDDCE ${it.name}", modifier = Modifier.padding(start = padding + 32.dp))
         } ?: Text("Empty")
     }
 
     override fun getMiddle(): @Composable (ColumnScope.() -> Unit) = {
-//        Button({
-//            val selectedFile = FileDialog(ComposeWindow(), "Select a folder").apply {
-//                isVisible = true
-//            }.file?.let { File(it) }
-//            if(selectedFile?.isDirectory != true) postErrorMessage("Please select a directory")
-//            else filepath = selectedFile.absolutePath
-//        }) {
-//            Text("Select Folder")
-//        }
+        var selected by rememberIt(selectedAction)
 
         Text("Select an action", fontWeight = FontWeight.Bold)
-        Button(onClick = {
-            selectedAction = Action.List
-        }) {
-            Text("List all files")
+        SimpleDropDown(selected, Action.entries) {
+            selected = it
         }
-        Button(onClick = {
-            selectedAction = Action.Merge
-        }) {
-            Text("Merge files")
+
+        ButtonText("Start") {
+            if (filepath.isBlank()) return@ButtonText postErrorMessage("Filepath can't be empty")
+            val file = tryOrNull { File(filepath) } ?: return@ButtonText postErrorMessage("Invalid file path")
+            showLoading()
+            GlobalScope.launch {
+                rootFile = if (file.isDirectory) Directory(file) else model.File(file)
+                selectedAction = selected
+                dismissLoading()
+            }
         }
     }
 
@@ -104,18 +114,6 @@ class FileHelperWindowElement : DefaultSplitWindowElement() {
 
     }
 
-    enum class Action {
-        //List all files and subfiles / folder
-        List,
 
-        //Delete all files/folders recursively
-        Delete,
-
-        //Merge all files to a given path to eliminate subfolders
-        Merge,
-
-        //Uses FFMPEG to change a video container
-        ChangeContainer
-    }
 
 }
