@@ -78,7 +78,7 @@ fun FileHelperWindowElement.runMerge() {
 
     val newPlace = File(destination, "MergedResult").also {
         if (it.exists()) {
-            it.deleteRecursively()
+            if (dryRun.not()) it.deleteRecursively()
             mergeResult += "Deleted old merged result folder and created new one.\n"
         }
         it.mkdir()
