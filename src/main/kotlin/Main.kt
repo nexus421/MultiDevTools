@@ -67,7 +67,7 @@ fun main() {
                 }
             },
             title = "Multi-Dev-Tools",
-            state = rememberWindowState(width = 1280.dp, height = 800.dp)
+            state = rememberWindowState(width = 1600.dp, height = 1000.dp)
         ) {
             MaterialTheme(colors = darkColors(primary = blue)) {
                 Scaffold {
