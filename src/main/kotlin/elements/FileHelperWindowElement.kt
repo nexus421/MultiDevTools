@@ -2,12 +2,9 @@ package elements
 
 import ButtonText
 import SimpleDropDown
-import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -32,11 +29,12 @@ class FileHelperWindowElement : DefaultSplitWindowElement() {
 
     override val name = "File Helper"
 
-    private var filepath by mutableStateOf("")
+    private var filepath by mutableStateOf("/home/nexus/Dokumente/Test")
     private var selectedAction by mutableStateOf(Action.List)
 
     //ToDo: Das hier muss als eine Liste gespeichert werden, damit wir auf eine LazyColumn setzen können. Wichtig bei vielen Dateien. flatMap nutzen?
-    private var rootFile: AnyFile? = null
+    private var rootFile: AnyFile? by mutableStateOf(null)
+    private val flattenDirs = mutableListOf<Directory>()
 
     override fun getLeftSide(): @Composable BoxScope.() -> Unit = {
         Column {
@@ -72,9 +70,43 @@ class FileHelperWindowElement : DefaultSplitWindowElement() {
         val file = File(filepath)
         if (filepath.length < 5 || file.exists().not()) return
 
-        Column(Modifier.verticalScroll(rememberScrollState())) {
-            DisplayFolder(file)
+        rootFile?.let { rf ->
+            if (rf is Directory) {
+                LazyColumn {
+                    items(flattenDirs) { directory ->
+                        Text(
+                            "\uD83D\uDCC2 ${directory.name}",
+                            fontWeight = FontWeight.ExtraBold,
+                            modifier = Modifier.padding(start = (32 * directory.depth).dp).fillMaxWidth()
+                        )
+                        val files = directory.files.filter { it is model.File }
+                        if (files.isEmpty()) Text(
+                            "Empty",
+                            modifier = Modifier.padding(start = (32 * directory.depth + 32).dp).fillMaxWidth()
+                        ) else {
+                            files.forEach {
+                                Text(
+                                    "\uD83D\uDDCE ${it.name}",
+                                    modifier = Modifier.padding(start = (32 * directory.depth + 32).dp).fillMaxWidth()
+                                )
+                            }
+                        }
+                    }
+                }
+            } else {
+                Text("\uD83D\uDDCE ${rf.name}")
+            }
         }
+
+
+    }
+
+    fun flattenRootFile(dir: Directory, depth: Int = 0): List<Directory> {
+        val otherDirectories = dir.files.filter { it is Directory }.map {
+            flattenRootFile(it as Directory, depth + 1)
+        }
+
+        return listOf(dir) + otherDirectories.flatten()
     }
 
     @Composable
@@ -103,7 +135,13 @@ class FileHelperWindowElement : DefaultSplitWindowElement() {
             val file = tryOrNull { File(filepath) } ?: return@ButtonText postErrorMessage("Invalid file path")
             showLoading()
             GlobalScope.launch {
-                rootFile = if (file.isDirectory) Directory(file) else model.File(file)
+                rootFile = null
+                flattenDirs.clear()
+                rootFile = if (file.isDirectory) {
+                    Directory(file).also {
+                        flattenDirs.addAll(flattenRootFile(it))
+                    }
+                } else model.File(file)
                 selectedAction = selected
                 dismissLoading()
             }
@@ -113,7 +151,6 @@ class FileHelperWindowElement : DefaultSplitWindowElement() {
     override fun getTopView(): @Composable BoxScope.() -> Unit = {
 
     }
-
 
 
 }
