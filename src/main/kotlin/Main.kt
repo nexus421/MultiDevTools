@@ -50,7 +50,9 @@ fun main() {
         NumConverterWindowElement(),
         PermutationsWindowElement(),
         CompressWindowElement(),
-        EncryptionWindowElement()
+        EncryptionWindowElement(),
+//        UrlEncodingWindowElement()
+        FileHelperWindowElement()
     ).filter { it.availableOS == OS.All || it.availableOS == currentSystemType }
 
     var onClose by mutableStateOf(false)
@@ -65,7 +67,7 @@ fun main() {
                 }
             },
             title = "Multi-Dev-Tools",
-            state = rememberWindowState(width = 1280.dp, height = 800.dp)
+            state = rememberWindowState(width = 1600.dp, height = 1000.dp)
         ) {
             MaterialTheme(colors = darkColors(primary = blue)) {
                 Scaffold {
